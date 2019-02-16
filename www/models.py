@@ -5,7 +5,7 @@
 Models for user, blog, comment.
 """
 
-__author__ = 'Infinity'
+__author__ = 'Infuny'
 
 import time, uuid # 导入时间模块和唯一标识模块
 

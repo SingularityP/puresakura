@@ -4,7 +4,7 @@
 Construct the web structure of response function.
 """
 
-__author__ = 'Infinity'
+__author__ = 'Infuny'
 
 import functools, inspect, asyncio, os
 from aiohttp import web
