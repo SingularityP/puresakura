@@ -24,7 +24,7 @@ logging.basicConfig(level=logging.DEBUG) # 设置全局日志等级
 
 # 初始化jinja2模板
 def init_jinja2(app, **kw):
-    logging.info('init jinja2...') # 记录日志
+    logging.info('[APP] Start initializing jinja2 ...') # 记录日志
     # （1）建立Environment类options参数的配置
     options = dict(
             # 自动转译xml/html的特殊字符
@@ -51,9 +51,9 @@ def init_jinja2(app, **kw):
     if filters: # 有过滤器的时候
         for name, f in filters.items():
             env.filters[name] = f # filters是Environment类的属性：过滤器字典（过滤器名:过滤器指针）
-    # （）最终给app添加上__templateing__字段，该字段表示模板环境
+    # （4）最终给app添加上__templateing__字段，该字段表示模板环境
     app['__templating__'] =  env
-    logging.info('fini jinja2...')
+    logging.info('[APP] Finish initializing jinja2 ...')
     
 # 编写过滤器
 def datetime_filter(t):
@@ -72,7 +72,7 @@ def datetime_filter(t):
 # 编写用于输出日志的middleware（前件）
 async def logger_factory(app, handler): # handler为视图函数
     async def logger(request):
-        logging.info('Request: %s %s' % (request.method, request.path))
+        logging.info('[APP] Request: %s %s' % (request.method, request.path))
         return await handler(request) # 因为是协程，handler处理只有一个，都交回处理
     return logger
 
@@ -83,14 +83,14 @@ async def data_factory(app, handler): # handler为视图函数
             request.__data__ = await request.json()
         elif request.content_type.startwith('application/x-www-form-urlencode'):
             request.__data__ = await request.post()
-        logging.info('request form: %s' % str(request.__data__))
-        return (await handler(request))
+        logging.info('[APP] Request form: %s' % str(request.__data__))
+        return await handler(request)
     return parse_data
 
 # 编写使用cookie解析方法的中间件（前件）
 async def auth_factory(app, handler):
     async def auth(request):
-        logging.info('check user: %s %s' % (request.method, request.path))
+        logging.info('[APP] Check user: %s %s' % (request.method, request.path))
         request.__user__ = None # 默认设置用户名为空（默认不通过，需验证cookie后再判断是否通过）
         cookie_str = request.cookies.get(COOKIE_NAME) # 通过cookie名字获取cookie值
         if cookie_str: # 获取到cookie值
@@ -101,7 +101,6 @@ async def auth_factory(app, handler):
         if request.path.startswith('/manage/') and (request.__user__ is None or not request.__user__.admin):
             return web.HTTPFound('/signin') # 重新登录
         return (await handler(request))
-        logging.debug('end check user')
     return auth
 
 # 编写构造Response对象的middleware（后件）
@@ -115,30 +114,28 @@ logger_factory => response_factory => RequsetHandler().__call__ => handler
 '''
 async def response_factory(app, handler):
     async def response(request):
-        logging.info('Response handler...') # 记录日志
-        logging.info(request)
         r = await handler(request) # 视图函数返回处理后的数据
-        logging.info('Response result = %s' % str(r)) # 记录日志（视图函数响应内容）
+        logging.info('[APP] Start Response handler ...') # 记录日志
+        logging.debug('[APP]     Response_factory - result = %s' % str(r)) # 记录日志（视图函数响应内容）
         if isinstance(r, web.StreamResponse): # 若返回response对象，StreamResponse是所有Response对象的父类
-            logging.debug('Response_factory - None')
-            logging.debug(type(r))
+            logging.debug('[APP]     Response_factory - None')
             return r # 无需构造，直接返回
         if isinstance(r, bytes): # 若返回bytes串
-            logging.debug('Response_factory - bytes')
+            logging.debug('[APP]     Response_factory - bytes')
             resp = web.Response(body=r) # 继承自StreamResponse，接收body参数，构造HTTP响应内容
             resp.content_type = 'application/octet-stream' # 设置响应的content-type
             return resp # 返回响应内容
         if isinstance(r, str):
-            logging.debug('Response_factory - str')
+            logging.debug('[APP]     Response_factory - str')
             if r.startswith('redirect'): # 若返回重定向字符串
                 return web.HTTPFound(r[9:]) # 重定向至目标URL
             resp = web.Response(body=r.encode('utf-8')) # 用字符串的utf-8编码构造HTTP响应
             resp.content_type = 'text/html;charset=utf-8' # 设置content-type属性：utf-8编码的text格式
             return resp # 返回响应内容
         if isinstance(r, dict): # 如果返回dict对象（可能是json，疯狂暗示使用模板文件( • ̀ω•́ )✧）
-            logging.debug('Response_factory - dict')
+            logging.debug('[APP]     Response_factory - dict')
             template = r.get('__template__', None) # 获取__template__信息
-            if template is None: # 不带有模板信息，返回json对象
+            if template is None: # 不带有模板信息，返回json对象的字符串形式
                 '''
                 ensure_ascii : 默认True，仅能输出ascii格式数据。故设置为False
                 default : r对象会先被传入default函数进行处理，然后才被序列化为json对象（对象的序列化需要手动编写）
@@ -157,11 +154,11 @@ async def response_factory(app, handler):
                 resp.content_type = 'text/html;charset=utf-8'
                 return resp
         if isinstance(r, int) and (600>r>100): # 如果返回响应码
-            logging.debug('Response_factory - int')
+            logging.debug('[APP]     Response_factory - int')
             resp = web.Response(status=r) # 构造响应码对象的响应
             return resp
         if isinstance(r, tuple) and len(r) == 2: # 如果返回了一组响应代码和原因，如 (200, 'OK') (404, 'Not Found')
-            logging.debug('Response_factory - tuple int')
+            logging.debug('[APP]     Response_factory - tuple int')
             status_code, message = r
             if isinstance(status_code, int) and (600>status_code>=100):
                 resp = web.Response(status=r, text=str(message)) # 根据响应码及原因构造返回对象
@@ -173,7 +170,7 @@ async def response_factory(app, handler):
 # 更新Web App框架
 async def init(loop): # 2 生成web框架coroutine
     await orm.create_pool(loop=loop, **configs.db) # 获取orm操作线程
-    app = web.Application(loop=loop, middlewares=[logger_factory, auth_factory, response_factory]) # 2.1 建立逻辑框架
+    app = web.Application(loop=loop, middlewares=[logger_factory, auth_factory, response_factory]) # 2.1 建立服务器应用框架
     init_jinja2(app, filters=dict(datetime=datetime_filter))
     add_routes(app, 'handlers') # 2.2 映射首页处理请求，这里另设handler文件存放视图函数
     add_static(app)
