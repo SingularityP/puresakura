@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__author__ = 'Infinity'
+__author__ = 'Infuny'
 
 """
 async web application.
@@ -178,7 +178,7 @@ async def init(loop): # 2 生成web框架coroutine
     add_routes(app, 'handlers') # 2.2 映射首页处理请求，这里另设handler文件存放视图函数
     add_static(app)
     srv = await loop.create_server(app.make_handler(), '127.0.0.1', 9000) # 2.3 建立服务器（协议工厂）
-    logging.info('server started at http://127.0.0.1:9000...')
+    logging.info('[APP] Server started at http://127.0.0.1:9000 ...')
     return srv # 2.3 返回服务器对象
 
 loop = asyncio.get_event_loop() # 2 获取事件循环

@@ -61,7 +61,7 @@ def execute(sql, args): # INSERT, UPDATE, DELETE语句封装
             yield from cur.close() # 关闭指针
             logging.info('[ORM]     rows affected: %s' % affected) # 记录日志
         except BaseException as e: # 处理异常
-            logging.error(str(e))
+            logging.error("[ORM] " + str(e))
         return affected # 返回结果数
 
 # orm顶层设计 - 辅助函数
