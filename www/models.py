@@ -40,7 +40,7 @@ class Blog(Model): # 定义博客模型
     user_id = StringField(column_type='varchar(50)') # 博客所属的用户id
     user_name = StringField(column_type='varchar(50)') # 博客所属的用户名称
     name = StringField(column_type='varchar(50)') # 博客名称
-    summary = StringField(column_type='varchar(200)') # 博客摘要
+    summary = StringField(column_type='varchar(500)') # 博客摘要
     content = TextField() # 博客正文
     created_at = FloatField(default=time.time) # 博客创建时间
     readers = IntegerField() # 博客阅读量
