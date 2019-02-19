@@ -23,9 +23,9 @@ configs = {
                 },
         'images' : {
                 'base_path' : '/static/images/',
-                'blog_path' : '/static/images/blog_images/',
-                'user_path' : '/static/images/user_images/',
-                'article_path' : '/static/images/article_images/',
-                'tool_path' : '/static/images/tool_images/'
+                'blog_path' : '/static/images/img_blog/',
+                'user_path' : '/static/images/img_user/',
+                'article_path' : '/static/images/img_art/',
+                'tool_path' : '/static/images/img_tool/'
                 }
         }
