@@ -150,15 +150,11 @@
 		font-style: italic;
 	}
 
-	p {
-		margin: 0 0 2rem 0;
-	}
-
 	h1, h2, h3, h4, h5, h6 {
 		color: #ffffff;
 		font-weight: 600;
 		line-height: 1.5;
-		margin: 0 0 1rem 0;
+		margin: 0;
 		text-transform: uppercase;
 		letter-spacing: 0.2rem;
 	}
@@ -1592,3 +1588,89 @@
 		body.is-loading #footer {
 			opacity: 0;
 		}
+
+/* Specific */
+
+    /*Base*/
+
+    .clear {
+        clear: both;
+    }
+
+    /* blogs */
+
+    .blogs {
+        -moz-transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        -webkit-transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        -ms-transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        padding: 1rem 0.5rem 1rem 0.5rem;
+        margin: 0 0 0 0;
+        border-radius: 4px;
+    }
+
+    .blogs:hover {
+        background-color: rgba(255, 255, 255, 0.175);
+        box-shadow: 2px 3px 6px 2px rgba(0, 0, 0, 0.125);
+    }
+
+    .blogs h3 {
+        float: left;
+    }
+
+    .blogs .meta {
+        float: right;
+        font-size: 0.75rem;
+        color: darkgray;
+    }
+
+    .blogs img {
+        -moz-transition: -moz-transform 0.2s ease-in-out;
+        -webkit-transition: -webkit-transform 0.2s ease-in-out;
+        -ms-transition: -ms-transform 0.2s ease-in-out;
+        transition: transform 0.2s ease-in-out;
+        float: left;
+        margin: 0.5rem 1rem 0 0;
+        border-radius: 5px;
+    }
+
+    .blogs img:hover {
+        -moz-transform: scale(1.1);
+        -webkit-transform: scale(1.1);
+        -ms-transform: scale(1.1);
+        transform: scale(1.1);
+    }
+
+    .blogs p {
+        line-height:1.5rem;
+    }
+
+    /* Users */
+
+    #users {
+        position: absolute;
+        right: 0.75rem;
+        top: 0.75rem;
+        z-index: 5;
+    }
+
+    #users a {
+        border-bottom: 0;
+        padding: 0.25rem 0.75rem 0.25rem 0.75rem;
+        border-radius: 4px;
+        color: rgba(19, 21, 25, 0.75);
+    }
+
+    #users a:hover {
+        background-color: rgba(255, 255, 255, 0.175);
+    }
+
+    /* Singin and Register */
+
+    #wrapper #signin {
+        width: 30rem;
+    }
+
+    #wrapper #register {
+        width: 30rem;
+    }

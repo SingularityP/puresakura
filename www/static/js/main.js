@@ -18,7 +18,8 @@
 	$(function() {
 
 		var	$window = $(window),
-			$body = $('body'),
+            $body = $('body'),
+            $users = $('#users'),
 			$wrapper = $('#wrapper'),
 			$header = $('#header'),
 			$footer = $('#footer'),
@@ -98,9 +99,10 @@
 								// Deactivate all articles (just in case one's already active).
 									$main_articles.removeClass('active');
 
-								// Hide header, footer.
+								// Hide header, footer, users.
 									$header.hide();
-									$footer.hide();
+                                    $footer.hide();
+                                    $users.hide(200);
 
 								// Show main, article.
 									$main.show();
@@ -172,9 +174,10 @@
 							// Show article.
 								setTimeout(function() {
 
-									// Hide header, footer.
+									// Hide header, footer, users.
 										$header.hide();
-										$footer.hide();
+                                        $footer.hide();
+                                        $users.hide(200);
 
 									// Show main, article.
 										$main.show();
@@ -231,9 +234,10 @@
 									$article.hide();
 									$main.hide();
 
-								// Show footer, header.
+								// Show footer, header, users.
 									$footer.show();
-									$header.show();
+                                    $header.show();
+                                    $users.show(200);
 
 								// Unmark as visible.
 									$body.removeClass('is-article-visible');
@@ -266,9 +270,10 @@
 								$article.hide();
 								$main.hide();
 
-							// Show footer, header.
+							// Show footer, header, users.
 								$footer.show();
 								$header.show();
+                                $users.show(200);
 
 							// Unmark as visible.
 								setTimeout(function() {

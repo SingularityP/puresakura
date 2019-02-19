@@ -69,7 +69,7 @@ def datetime_filter(t):
     dt = datetime.fromtimestamp(t) # 通过timestamp创建datetime对象，默认本地时区
     return u'%s-%s-%s' % (dt.year, dt.month, dt.day) # 返回年月日
 
-# 编写用于输出日志的middleware（前件）
+# 用于输出日志的 middleware（前件）
 async def logger_factory(app, handler): # handler为视图函数
     async def logger(request):
         logging.info('[APP] Request: %s %s' % (request.method, request.path))
@@ -87,7 +87,7 @@ async def data_factory(app, handler): # handler为视图函数
         return await handler(request)
     return parse_data
 
-# 编写使用cookie解析方法的中间件（前件）
+# 用于解析用户状态（Cookie）的 middleware（前件）
 async def auth_factory(app, handler):
     async def auth(request):
         logging.info('[APP] Check user: %s %s' % (request.method, request.path))
@@ -96,7 +96,7 @@ async def auth_factory(app, handler):
         if cookie_str: # 获取到cookie值
             user = await cookie2user(cookie_str) # 解析cookie
             if user: # 如果解析成功
-                logging.info('set current user: %s' % user.email) # 记录日志
+                logging.info('[APP] Set current user: %s' % user.email) # 记录日志
                 request.__user__ = user # 通过
         if request.path.startswith('/manage/') and (request.__user__ is None or not request.__user__.admin):
             return web.HTTPFound('/signin') # 重新登录
@@ -106,7 +106,7 @@ async def auth_factory(app, handler):
 # 编写构造Response对象的middleware（后件）
 '''
 请求对象request的处理工序：
-logger_factory => response_factory => RequsetHandler().__call__ => handler
+logger_factory => auth_factory => RequsetHandler().__call__ => handler => response_factory
 响应对象response的处理工序：
 1.由视图函数处理request后返回数据
 2.@get@post装饰器返回对象上附加'__method__'和'__route__'属性，使其附带URL信息
@@ -132,7 +132,7 @@ async def response_factory(app, handler):
             resp = web.Response(body=r.encode('utf-8')) # 用字符串的utf-8编码构造HTTP响应
             resp.content_type = 'text/html;charset=utf-8' # 设置content-type属性：utf-8编码的text格式
             return resp # 返回响应内容
-        if isinstance(r, dict): # 如果返回dict对象（可能是json，疯狂暗示使用模板文件( • ̀ω•́ )✧）
+        if isinstance(r, dict): # 如果返回dict对象（可能是json，又可能疯狂暗示使用模板文件( • ̀ω•́ )✧）
             logging.debug('[APP]     Response_factory - dict')
             template = r.get('__template__', None) # 获取__template__信息
             if template is None: # 不带有模板信息，返回json对象的字符串形式
@@ -149,7 +149,7 @@ async def response_factory(app, handler):
                 app['__templating__'] : 获取已初始化的Environment对象，调用get_template()方法返回Template对象
                 调用Template对象的render()方法，传入r渲染模板，返回unicode格式字符串，将其用utf-8编码
                 '''
-                r['__user__'] = request.__user__ # 设置用户名
+                r['__user__'] = request.__user__ # 设置用户名，jinja 用于判断用户是否登录
                 resp = web.Response(body=app['__templating__'].get_template(template).render(**r).encode('utf-8'))
                 resp.content_type = 'text/html;charset=utf-8'
                 return resp

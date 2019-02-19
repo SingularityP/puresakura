@@ -25,22 +25,22 @@ def next_id(): # 获取唯一ID
 class User(Model): # 定义用户模型
     __table__ =  'users'
     
-    id = StringField(primary_key=True, default=next_id, ddl='varchar(50)') # 用户id
-    email = StringField(ddl='varchar(50)') # 邮箱地址
-    passwd = StringField(ddl='varchar(50)') # 密码
+    id = StringField(primary_key=True, default=next_id, column_type='varchar(50)') # 用户id
+    email = StringField(column_type='varchar(50)') # 邮箱地址
+    passwd = StringField(column_type='varchar(50)') # 密码
     admin = BooleanField() # 管理员标识
-    name = StringField(ddl='varchar(50)') # 用户名称
+    name = StringField(column_type='varchar(50)') # 用户名称
     created_at = FloatField(default=time.time) # 账号注册时间
    
 # 模型设计 - 博客模型
 class Blog(Model): # 定义博客模型
     __table__ = 'blogs'
     
-    id = StringField(primary_key=True, default=next_id, ddl='varchar(50)') # 博客id
-    user_id = StringField(ddl='varchar(50)') # 博客所属的用户id
-    user_name = StringField(ddl='varchar(50)') # 博客所属的用户名称
-    name = StringField(ddl='varchar(50)') # 博客名称
-    summary = StringField(ddl='varchar(200)') # 博客摘要
+    id = StringField(primary_key=True, default=next_id, column_type='varchar(50)') # 博客id
+    user_id = StringField(column_type='varchar(50)') # 博客所属的用户id
+    user_name = StringField(column_type='varchar(50)') # 博客所属的用户名称
+    name = StringField(column_type='varchar(50)') # 博客名称
+    summary = StringField(column_type='varchar(200)') # 博客摘要
     content = TextField() # 博客正文
     created_at = FloatField(default=time.time) # 博客创建时间
     readers = IntegerField() # 博客阅读量
@@ -50,10 +50,10 @@ class Blog(Model): # 定义博客模型
 class Comment(Model): # 评论模型
     __table__ = 'comments'
     
-    id = StringField(primary_key=True, default=next_id, ddl='varchar(50)') # 评论id
-    blog_id = StringField(ddl='varchar(50)') # 所属博客id
-    user_id = StringField(ddl='varchar(50)') # 所属用户id
-    user_name = StringField(ddl='varchar(50)') # 所属用户名称
+    id = StringField(primary_key=True, default=next_id, column_type='varchar(50)') # 评论id
+    blog_id = StringField(column_type='varchar(50)') # 所属博客id
+    user_id = StringField(column_type='varchar(50)') # 所属用户id
+    user_name = StringField(column_type='varchar(50)') # 所属用户名称
     content = TextField() # 评论正文
     created_at = FloatField(default=time.time) # 评论创建时间
 
@@ -61,10 +61,10 @@ class Comment(Model): # 评论模型
 class Reply(Model): # 回复模型
     __table__ = 'replies'
     
-    id = StringField(primary_key=True, default=next_id, ddl='varchar(50)') # 回复id
-    user_id = StringField(ddl='varchar(50)') # 所属用户id
-    user_name = StringField(ddl='varchar(50)') # 所属用户名称
-    target_cmid = StringField(ddl='varchar(50)') # 目标评论id
-    target_name = StringField(ddl='varchar(50)') # 目标用户名称
+    id = StringField(primary_key=True, default=next_id, column_type='varchar(50)') # 回复id
+    user_id = StringField(column_type='varchar(50)') # 所属用户id
+    user_name = StringField(column_type='varchar(50)') # 所属用户名称
+    target_cmid = StringField(column_type='varchar(50)') # 目标评论id
+    target_name = StringField(column_type='varchar(50)') # 目标用户名称
     content = TextField() # 回复正文
     created_at = FloatField(default=time.time) # 回复创建时间
