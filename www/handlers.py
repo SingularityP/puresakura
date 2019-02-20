@@ -9,9 +9,10 @@ from coroweb import get, post
 from models import User, Blog, Comment, Reply, next_id
 from config import configs
 from apis import APIValueError, APIError, APIPermissionError, APIResourceNotFoundError
+from tools.image_ruler.ruler import zoom
 
 from aiohttp import web
-import json, time, hashlib, re, logging
+import json, time, hashlib, re, os, logging
 logging.basicConfig(level=logging.DEBUG)
 
 # 1 首页相关逻辑
@@ -20,25 +21,27 @@ logging.basicConfig(level=logging.DEBUG)
 @get('/')
 async def index(request):
     logging.debug('[HANDLER] Handlering index.html ...')
-
     return {
             '__template__' : 'index.html', # 'template__'参数指定的模板文件是'test.html'，其他参数是传递给模板的数据
-            'images' : configs.images, # 图片路径信息
             }
 
 # 1.2 API 请求
 # 1.2.1 获取博客列表数据 
-@get('/api/blogs')
-async def getBlogs():
+@get('/api/blogs/{sort}')
+async def getBlogs(*, sort=None):
     logging.debug('[HANDLER] Handlering /api/blogs in index.html ...')
-    infos = await Blog.findAll(limit=10, orderBy='created_at desc', items=['name', 'summary', 'user_name', 'created_at', 'readers'])
+    where_sql = None
+    if sort:
+        where_sql="sort=" + str(sort)
+    infos = await Blog.findAll(where=where_sql, limit=10, orderBy='created_at desc', items=['name', 'summary', 'user_name', 'created_at', 'readers'])
     return {
             'infos' : infos, # 博客数据，不带有模板，在 app.py 内的 ResponseFactory 内会自动转换为 json
+            'images' : configs.images
             }
 
 # 2 用户管理相关逻辑
 # 2.1 页面请求
-# 2.1.1 获取
+# 2.1.1 
 
 # 2.2 API 请求
 # 2.2.1 用户注册逻辑
@@ -79,7 +82,7 @@ async def cookie2user(cookie_str): # 用来解析 Cookie
         logging.exception(e)
         return None
 
-@post('/api/register') # 用户注册 api
+@post('/api/register') # 注册用户
 async def api_register_user(*, email, name, passwd):
     logging.debug('[HANDLER] Handlering /api/users in index.html ...')
     if not name or not name.strip(): # 如果没有名字
@@ -104,7 +107,7 @@ async def api_register_user(*, email, name, passwd):
     return r
 
 # 2.2.2 用户登录逻辑
-@post('/api/signin') # 用户验证 api
+@post('/api/signin') # 验证用户
 async def authenticate(*, email, passwd):
     logging.debug('[HANDLER] Handlering /api/signin in index.html ...')
     if not email: # 如果没有邮箱
@@ -131,10 +134,157 @@ async def authenticate(*, email, passwd):
     return r
 
 # 2.2.3 用户登出逻辑
-@get('/api/signout') # 用户登出 api（会跳转到其他页面）
+@get('/api/signout') #（会跳转到其他页面）
 async def signout(request):
     logging.debug('[HANDLERS] Handlering /aip/signout in index.html ...')
     referer = request.headers.get('Referer')
     r = web.HTTPFound(referer or '/')
     r.set_cookie(COOKIE_NAME, '-deleted-', max_age=0, httponly=True) # 删除 Cookie
     return r
+
+# 3 博客相关逻辑
+# 3.1 页面请求
+### 3.1.1 获取博客页 blog.html
+@get('/blog/{id}')
+async def getBlog(id):
+    logging.debug('[HANDLER] Handlering blog.html ...')
+    blog = await Blog.find(id)
+    '''
+    comments = await Comment.findAll('blog_id=?', [id], orderBy='created_at desc')
+    for comment in comments:
+         comment.replies = await Reply.findAll('target_cmid=?', comment.id, orderBy='created_at desc', items=['user_name', 'user_id', 'target_name', 'content', 'created_at'])
+    '''
+    blog.readers += 1
+    await blog.update()
+    return {
+            '__template__': 'blog.html',
+            'blog_name': blog.name,
+            'blog_id': blog.id
+            }
+
+# 3.2 API 请求
+# 3.2.1 博客数据传输
+@get('/api/blog/{id}')
+async def getBlogData(id):
+    logging.debug('[HANDLERS] Handlering /aip/blog/{id} in index.html ...')
+    blog = await Blog.find(id)
+    comments = await Comment.findAll('blog_id=?', [id], orderBy='created_at desc')
+    for comment in comments:
+         comment.replies = await Reply.findAll('target_cmid=?', comment.id, orderBy='created_at desc', items=['user_name', 'user_id', 'target_name', 'content', 'created_at'])
+    return {
+            'blog_data': blog,
+            'comment_data': comments,
+            'images' : configs.images
+            }
+    
+# 4 后台管理相关
+## 4.1 页面请求
+### 4.1.1 获取后台管理页 manage.html
+@get('/manage')
+async def manage():
+    logging.debug('[HANDLER] Handlering manage.html ...')
+    return {
+            '__template__': 'manage.html'
+            }
+    
+### 4.1.2 获取博客编辑页 manage_blog_edit.html
+@get('/manage/blog/{id}')
+async def getBlogEdit(id):
+    logging.debug('[HANDLER] Handlering manage_blog_edit.html ...')
+    blog = await Blog.find(id)
+    return {
+            '__template__': 'manage_blog_edit.html',
+            'blog_name': blog.name,
+            'blog_id': blog.id
+            }
+    
+## 4.2 API 请求
+### 4.2.1 存储博客数据
+def get_image_path(target): # 图片 IO 位置路径处理（主要是避免不同的系统的路径符问题）
+    IOImage = None
+    if target == 'base':
+        IOImage = (configs.images['base_path'].split('/'))[1:-1]
+    elif target == 'blog':
+        IOImage = (configs.images['blog_path'].split('/'))[1:-1]
+    elif target == 'user':
+        IOImage = (configs.images['user_path'].split('/'))[1:-1]
+    elif target == 'art':
+        IOImage = (configs.images['article_path'].split('/'))[1:-1]
+    path = IOImage[0]
+    for item in IOImage[1:]:
+        path = os.path.join(path, item)
+    logging.debug(IOImage)
+    return path
+
+async def saveImage(img_name=None, img_data=None, target='base'): # 存储图片
+    logging.debug('[HANDLERS]     Saving image ...')
+    if img_name == None: # 检查图片名
+        logging.info("[HANDLERS]     Counld not get image name, generate new name.")
+        img_name = next_id() + '.jpg'
+    if img_data is None: # 检查图片数据
+        raise APIValueError('imgdata', 'image data can not be empty.')
+    img_path = get_image_path(target) # 合成路径
+    save_path = os.path.join(img_path, img_name) # 合成路径
+    fileWriter = None
+    try:
+        logging.debug('[HANDLERS]     Opene file ' + save_path)
+        fileWriter = open(save_path, 'wb')
+        with img_data:
+            for line in img_data:
+                fileWriter.write(line)
+        if target == 'blog':
+            logging.debug("[HANDLERS]     Create a small version of the image.")
+            zoom(img_path, img_name, (192, 108))
+    except OSError as e:
+        logging.warn('[HANDLERS]     Image writing error: ' + repr(e))
+        return repr(e)
+    finally:
+        if fileWriter:
+            fileWriter.close()
+        return True
+
+def check_admin(request):  # 验证管理员身份
+    if request.__user__ is None or not request.__user__.admin:
+        raise APIPermissionError()
+
+@post('/api/blog/new') # 新增博客，存储数据和图片
+async def createBlogData(request, *, name, summary, content, sort, file):
+    logging.debug('[HANDLERS] Handlering /aip/blog/new in manage_blog_edit.html ...')
+    check_admin(request) # 检查是否是管理员
+    if not name or not name.strip(): # 如果没有名字
+        raise APIValueError('name', 'name cannot be empty.')
+    if not summary or not summary.strip(): # 如果没有标题
+        raise APIValueError('summary', 'summary cannot be empty.')
+    if not content or not content.strip(): # 如果没有内容
+        raise APIValueError('content', 'content cannot be empty.')
+    # 创建博客
+    blog = Blog(id = next_id(), user_id=request.__user__.id, user_name=request.__user__.name, name=name.strip(), summary=summary.strip(), content=content, sort=sort)
+    await blog.save()
+    # 存储图片
+    if file != '' and file!=None:
+        img_name = blog.id + '.jpg'
+        img_data = file.file
+        await saveImage(img_name, img_data, 'blog')
+    return blog
+
+### 4.2.2 存储 markdown 图片数据
+@post('/api/blog/img') 
+async def saveMdImage(**kw):
+    logging.debug('[HANDLERS] Handlering /aip/blog/img in manage_blog_edit.html ...')
+    img_name = next_id() + '.jpg' # 图片名
+    img_data = kw.get('editormd-image-file').file # 图片数据
+    if img_data is None:
+        raise APIValueError('imgdata', 'Image data can not be empty.')
+    status = await saveImage(img_name, img_data, 'art')
+    if status == True:
+        return {
+                'success': 1,
+                'message': 'Image set successful.',
+                'url': configs.images['article_path'] + img_name
+                }
+    else:
+        return {
+                'success': 0,
+                'message': status,
+                'url': ''
+                }

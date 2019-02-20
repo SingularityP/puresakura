@@ -176,6 +176,7 @@ def add_route(app, fn): # 用于注册一个视图函数（映射一个URL请求
         fn = asyncio.coroutine(fn) # 变为协程
     logging.info('[COROWEB] Add route %s %s => %s(%s)' % (method, path, fn.__name__, ','.join(inspect.signature(fn).parameters.keys())))
     app.router.add_route(method, path, RequestHandler(app, fn)) # 注册函数
+    # path 的形式为 "/a/b/c" 或 "/a/{var}"，后者可以匹配一个变量值，该变量会提取出来存放到 request 的一个同名变量中通过 "request.match_info['var']" 获取
 
 def add_routes(app, module_name): # 从模块内批量注册视图函数
     n = module_name.rfind('.') # 从右侧检索，返回索引。若无，返回-1

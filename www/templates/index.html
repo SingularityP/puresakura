@@ -19,6 +19,9 @@
     <div id="users">
 
         {% if __user__ %}
+            {% if __user__.admin %}
+            <a href="/manage">管理</a>
+            {% endif %}
         <a href="/api/signout">登出</a>
         {% else %}
         <a href="#signin">登录</a> &nbsp;
@@ -76,17 +79,28 @@
                 <section v-else>
                     <div v-if="loading">Loading...</div>
                 </section>
-                <blog v-for="info in infos"
+                <blog 
+                      v-for="info in infos"
                       v-bind:key="info.id"
-                      v-bind:info="info">
+                      v-bind:info="info"
+                      v-bind:images="images"
+                      >
                 </blog>
             </article>
 
             <!-- Life -->
             <article id="life">
-                <h2 class="major">About</h2>
-                <span class="image main"><img src="../static/images/pic03.jpg" alt="" /></span>
-                <p>Lorem ipsum dolor sit amet, consectetur et adipiscing elit. Praesent eleifend dignissim arcu, at eleifend sapien imperdiet ac. Aliquam erat volutpat. Praesent urna nisi, fringila lorem et vehicula lacinia quam. Integer sollicitudin mauris nec lorem luctus ultrices. Aliquam libero et malesuada fames ac ante ipsum primis in faucibus. Cras viverra ligula sit amet ex mollis mattis lorem ipsum dolor sit amet.</p>
+                <section v-if="errored">
+                    <p>We're sorry, we're not able to retrieve this information at the moment, please try back later</p>
+                </section>
+                <section v-else>
+                    <div v-if="loading">Loading...</div>
+                </section>
+                <blog v-for="info in infos"
+                      v-bind:key="info.id"
+                      v-bind:info="info"
+                      v-bind:images="images">
+                </blog>
             </article>
 
             <!-- Tool -->
@@ -432,7 +446,7 @@ print 'It took ' + i + ' iterations to sort the deck.';</code></pre>
     <script src="../static/js/sha1.min.js"></script>
     <script type="text/javascript">
 
-        // script for "tech" part blogs initializion.
+        // script for "tech" and "life" part blogs initializion.
 
         Vue.filter('datetime_filter', function (value) {
             delta = new Date().getTime - value;
@@ -453,7 +467,7 @@ print 'It took ' + i + ' iterations to sort the deck.';</code></pre>
         });
 
         Vue.component('blog', {
-            props: ['info'],
+            props: ['info', 'images'],
             template: `
                 <div class="blogs">
                     <h3 class="title"><a :href="'/blog/'+info.id">{{ info.name }}</a></h3>
@@ -463,7 +477,7 @@ print 'It took ' + i + ' iterations to sort the deck.';</code></pre>
                         <i class="icon fa-eye"></i> {{ info.readers }} &nbsp;
                     </div>
                     <div class="clear"></div>
-                    <a href="#"><img :src="'../static/images/img_blog/imgS_' + info.id + '.jpg'" alt="图片被吞掉了！"/></a>
+                    <a :href="'/blog/'+info.id"><img :src="'..' + images.blog_path + 'imgS_' + info.id + '.jpg'" alt="图片被吞掉了！"/></a>
                     <p class="summary">{{ info.summary }}</p>
                     <div class="clear"></div>
                 </div>
@@ -474,17 +488,35 @@ print 'It took ' + i + ' iterations to sort the deck.';</code></pre>
             el: '#tech',
             data: {
                 infos: null,
+                images: null,
                 loading: true,
                 errored: false
             },
             mounted: function () {
                 axios
-                .get("/api/blogs")
-                .then(response => (this.infos = response.data.infos))
+                .get("/api/blogs/1")
+                    .then(response => { this.infos = response.data.infos; this.images = response.data.images; })
                 .catch(error => { console.log(error); this.errored = true })
                 .finally(() => this.loading = false)
             }
         });
+
+        var life = new Vue({
+            el: '#life',
+            data: {
+                infos: null,
+                images: null,
+                loading: true,
+                errored: false
+            },
+            mounted: function () {
+                axios
+                    .get("/api/blogs/2")
+                    .then(response => { this.infos = response.data.infos; this.images = response.data.images; })
+                    .catch(error => { console.log(error); this.errored = true })
+                    .finally(() => this.loading = false)
+            }
+        })
 
         // script for user register.
 
@@ -565,27 +597,6 @@ print 'It took ' + i + ' iterations to sort the deck.';</code></pre>
                 }
             }
         });
-
-        /*
-            {
-                id: '001',
-                name: 'title1',
-                imgurl: '../static/images/img_blog/imgS_001.jpg',
-                summary: 'Lorem ipsum dolor sit amet, consectetur et adipiscing elit. Praesent eleifend dignissim arcu, at eleifend sapien imperdiet ac. Aliquam erat volutpat. Praesent urna nisi, fringila lorem et vehicula lacinia quam. Integer sollicitudin mauris nec lorem luctus ultrices. Aliquam libero et malesuada fames ac ante ipsum primis in faucibus. Cras viverra ligula sit amet ex mollis mattis lorem ipsum dolor sit amet.',
-                user_name: 'Sakura',
-                created_at: '192000',
-                readers: 10,
-            },
-            {
-                id: '002',
-                name: 'title2',
-                imgurl: '../static/images/img_blog/imgS_002.jpg',
-                summary: 'Lorem ipsum dolor sit amet, consectetur et adipiscing elit. Praesent eleifend dignissim arcu, at eleifend sapien imperdiet ac. Aliquam erat volutpat. Praesent urna nisi, fringila lorem et vehicula lacinia quam. Integer sollicitudin mauris nec lorem luctus ultrices. Aliquam libero et malesuada fames ac ante ipsum primis in faucibus. Cras viverra ligula sit amet ex mollis mattis lorem ipsum dolor sit amet.',
-                user_name: 'Tim',
-                created_at: '193000',
-                readers: 10,
-            }
-        */
 
     </script>
 </body>

@@ -1,0 +1,124 @@
+﻿<!DOCTYPE html>
+
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>{% block title %}<!-- title -->{% endblock %} - R 次源</title>
+        <style>
+
+        /* BG */
+
+        #bg {
+            -moz-transform: scale(1.0);
+            -webkit-transform: scale(1.0);
+            -ms-transform: scale(1.0);
+            transform: scale(1.0);
+            -webkit-backface-visibility: hidden;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            z-index: 1;
+        }
+
+            #bg:before, #bg:after {
+                content: '';
+                display: block;
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+            }
+
+            #bg:before {
+                background-image: linear-gradient(to top, rgba(19, 21, 25, 0.5), rgba(19, 21, 25, 0.5)), url("/static/images/overlay.png");
+                background-size: auto, 256px 256px;
+                background-position: center, center;
+                background-repeat: no-repeat, repeat;
+                z-index: 2;
+            }
+
+            #bg:after {
+                -moz-transform: scale(1.125);
+                -webkit-transform: scale(1.125);
+                -ms-transform: scale(1.125);
+                transform: scale(1.125);
+                -moz-filter: blur(0.2rem);
+                -webkit-filter: blur(0.2rem);
+                -ms-filter: blur(0.2rem);
+                filter: blur(0.2rem);
+                background-image: url("/static/images/bg.jpg");
+                background-position: center;
+                background-size: cover;
+                background-repeat: no-repeat;
+                z-index: 1;
+            }
+
+            /* Footer */
+
+            #footer {
+                width: 100%;
+                max-width: 100%;
+                margin-top: 2rem;
+                text-align: center;
+                position: relative;
+                color: white;
+                z-index: 3;
+            }
+
+                #footer .copyright {
+                    letter-spacing: 0.2rem;
+                    font-size: 0.6rem;
+                    opacity: 0.75;
+                    margin-bottom: 0;
+                    text-transform: uppercase;
+                }
+
+                #footer p {
+                    letter-spacing: 0.2rem;
+                    font-size: 0.6rem;
+                    opacity: 0.75;
+                    margin-bottom: 0;
+                    text-transform: uppercase;
+                }
+
+                #footer a {
+                    transition: border-bottom-color 0.2s ease-in-out;
+                    border-bottom: dotted 1px rgba(255, 255, 255, 0.5);
+                    text-decoration: none;
+                    color: inherit;
+                }
+
+                #footer a:hover {
+                    border-bottom-color: transparent;
+                }
+
+    </style>
+    {% block beforehead %}{% endblock %}
+</head>
+<body>
+
+    <!-- Main -->
+    <div id="layout">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Footer -->
+    <footer id="footer">
+        <p class="copyright">
+            &copy; 2019 Infuny
+            <br />
+            <a href="http://www.miitbeian.gov.cn/">粤ICP备18112642号</a> | Powered by <a href="https://github.com/SingularityP">PureSakura</a>
+        </p>
+    </footer>
+
+    <!-- BG -->
+    <div id="bg"></div>
+
+    <!-- Script and CSS -->
+    {% block afterhead %}<!-- after head -->{% endblock %}
+
+</body>
+</html>
