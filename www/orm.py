@@ -222,7 +222,7 @@ class Model(dict, metaclass=ModelMetaclass):
                 
     @classmethod
     @asyncio.coroutine
-    def findNumber(cls, selectField, where=None, args=None): # 查找指定属性的编号???
+    def findNumber(cls, selectField, where=None, args=None): # 定制 selection 和 where 进行数字查找，别名为 _num_
         'find number by select and where'
         sql = ['SELECT %s _num_ FROM `%s`' % (selectField, cls.__table__)]
         if where: # 处理where条件

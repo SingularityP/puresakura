@@ -3,7 +3,7 @@
 {% block title %}{( blog_name )}{% endblock %}
 
 {% block beforehead %}
-<link rel="stylesheet" href="../static/css/editormd.min.css" type="text/css" />
+<link rel="stylesheet" href="../static/css/editormd.css" type="text/css" />
 <style>
 
     #editor {
@@ -24,7 +24,6 @@
         transition: opacity 0.325s ease-in-out, transform 0.325s ease-in-out;
         opacity: 0;
     }
-
 </style>
 {% endblock %}
 
@@ -42,9 +41,9 @@
 {% block afterhead %}
 
 <script src="../static/js/jquery.min.js"></script>
-<script src="../static/js/vue.min.js"></script>
-<script src="../static/js/axios.min.js"></script>
-<script src="../static/js/editormd.min.js"></script>
+<script src="../static/js/vue.js"></script>
+<script src="../static/js/axios.js"></script>
+<script src="../static/js/editormd.js"></script>
 <script src="../static/lib/marked.min.js"></script>
 <script src="../static/lib/prettify.min.js"></script>
 <script src="../static/lib/raphael.min.js"></script>

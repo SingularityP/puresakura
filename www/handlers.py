@@ -6,9 +6,9 @@ Created on Fri Jun  1 00:05:23 2018
 @author: Infuny
 """
 from coroweb import get, post
-from models import User, Blog, Comment, Reply, next_id
+from models import User, Blog, Comment, Reply, next_id, Books, Readers, Borrows
 from config import configs
-from apis import APIValueError, APIError, APIPermissionError, APIResourceNotFoundError
+from apis import APIValueError, APIError, APIPermissionError, APIResourceNotFoundError, Page
 from tools.image_ruler.ruler import zoom
 
 from aiohttp import web
@@ -27,16 +27,42 @@ async def index(request):
 
 # 1.2 API 请求
 # 1.2.1 获取博客列表数据 
-@get('/api/blogs/{sort}')
-async def getBlogs(*, sort=None):
-    logging.debug('[HANDLER] Handlering /api/blogs in index.html ...')
+def get_page_index(page_str): # 将页码字符串转换为整型
+    logging.debug('[HANDLER]     Handlering /api/blogs, the page_str(no convert) is: ' + page_str)
+    p = 1
+    try:
+        p = int(page_str)
+        logging.debug('[HANDLER]     Handlering /api/blogs, the page_str(have converted) is: ' + str(p))
+    except:
+        pass
+    if p < 1:
+        p = 1
+    return p
+    
+@get('/api/blogs/{sort}') # 获取博客的简单列表，可定制
+async def getBlogs(*, sort='0', page='1'):
+    logging.debug('[HANDLER] Handlering /api/blogs/{sort} in index.html ...')
     where_sql = None
-    if sort:
-        where_sql="sort=" + str(sort)
-    infos = await Blog.findAll(where=where_sql, limit=10, orderBy='created_at desc', items=['name', 'summary', 'user_name', 'created_at', 'readers'])
+    limit_sql = 10
+    items_sql = ['name', 'summary', 'user_name', 'created_at', 'readers']
+    if sort != '0': # 全选时
+        where_sql="sort=" + sort # 构造类别条件
+        page = None # 不用页码对象
+    else: # 按类别选取时，构造页码对象，并设置 limit 和 items
+        page_index = get_page_index(page)
+        logging.debug('[HANDLER]     Handlering /api/blogs/{sort}, the page_index is: ' + str(page_index))
+        num = await Blog.findNumber('count(id)') # 获取条目总数
+        page = Page(num, page_index, 10)
+        if num == 0: # 处理无条目的情况
+            logging.warning('[HANDLER]     No data! Database is empty!')
+            return dict(page=page, blogs=())
+        limit_sql=(page.offset, page.limit)
+        items_sql = ['name','user_name', 'created_at', 'readers']
+    infos = await Blog.findAll(where=where_sql, limit=limit_sql, orderBy='created_at desc', items=items_sql)
     return {
-            'infos' : infos, # 博客数据，不带有模板，在 app.py 内的 ResponseFactory 内会自动转换为 json
-            'images' : configs.images
+            'infos': infos, # 博客数据，不带有模板，在 app.py 内的 ResponseFactory 内会自动转换为 json
+            'page': page,
+            'images': configs.images
             }
 
 # 2 用户管理相关逻辑
@@ -161,6 +187,32 @@ async def getBlog(id):
             'blog_name': blog.name,
             'blog_id': blog.id
             }
+    
+### 3.1.2 获取博客创建页 manage_blog_edit.html
+@get('/manage/blog/new')
+async def getBlogNew():
+    logging.debug('[HANDLER] Handlering (new) manage_blog_edit.html ...')
+    return {
+            '__template__': 'manage_blog_edit.html',
+            'blog_name': '新建',
+            'blog_id': '',
+            'images' : configs.images,
+            'isNew': True
+            }
+
+### 3.1.3 获取博客编辑页 manage_blog_edit.html
+@get('/manage/blog/edit/{id}')
+async def getBlogEdit(id):
+    logging.debug('[HANDLER] Handlering (edit) manage_blog_edit.html ...')
+    blog = await Blog.find(id)
+    return {
+            '__template__': 'manage_blog_edit.html',
+            'blog_name': blog.name,
+            'blog_id': blog.id,
+            'blog': blog,
+            'images' : configs.images,
+            'isNew': False
+            }
 
 # 3.2 API 请求
 # 3.2.1 博客数据传输
@@ -177,29 +229,7 @@ async def getBlogData(id):
             'images' : configs.images
             }
     
-# 4 后台管理相关
-## 4.1 页面请求
-### 4.1.1 获取后台管理页 manage.html
-@get('/manage')
-async def manage():
-    logging.debug('[HANDLER] Handlering manage.html ...')
-    return {
-            '__template__': 'manage.html'
-            }
-    
-### 4.1.2 获取博客编辑页 manage_blog_edit.html
-@get('/manage/blog/{id}')
-async def getBlogEdit(id):
-    logging.debug('[HANDLER] Handlering manage_blog_edit.html ...')
-    blog = await Blog.find(id)
-    return {
-            '__template__': 'manage_blog_edit.html',
-            'blog_name': blog.name,
-            'blog_id': blog.id
-            }
-    
-## 4.2 API 请求
-### 4.2.1 存储博客数据
+### 3.2.2 新增博客数据
 def get_image_path(target): # 图片 IO 位置路径处理（主要是避免不同的系统的路径符问题）
     IOImage = None
     if target == 'base':
@@ -242,11 +272,7 @@ async def saveImage(img_name=None, img_data=None, target='base'): # 存储图片
         if fileWriter:
             fileWriter.close()
         return True
-
-def check_admin(request):  # 验证管理员身份
-    if request.__user__ is None or not request.__user__.admin:
-        raise APIPermissionError()
-
+    
 @post('/api/blog/new') # 新增博客，存储数据和图片
 async def createBlogData(request, *, name, summary, content, sort, file):
     logging.debug('[HANDLERS] Handlering /aip/blog/new in manage_blog_edit.html ...')
@@ -267,8 +293,7 @@ async def createBlogData(request, *, name, summary, content, sort, file):
         await saveImage(img_name, img_data, 'blog')
     return blog
 
-### 4.2.2 存储 markdown 图片数据
-@post('/api/blog/img') 
+@post('/api/blog/img') ### 存储 markdown 图片数据
 async def saveMdImage(**kw):
     logging.debug('[HANDLERS] Handlering /aip/blog/img in manage_blog_edit.html ...')
     img_name = next_id() + '.jpg' # 图片名
@@ -288,3 +313,192 @@ async def saveMdImage(**kw):
                 'message': status,
                 'url': ''
                 }
+        
+# 3.2.3 修改博客数据
+@post('/api/blog/edit/{id}')
+async def editBlogData(id, request, *, name, summary, content, sort):
+    logging.debug('[HANDLERS] Handlering /aip/blog/edit/{id} in manage_article.html ...')
+    check_admin(request) # 检查是否是管理员
+    blog = await Blog.find(id) # 查找要修改的日志数据
+    if not name or not name.strip(): # 如果没有名字
+        raise APIValueError('name', 'name cannot be empty.')
+    if not summary or not summary.strip(): # 如果没有标题
+        raise APIValueError('summary', 'summary cannot be empty.')
+    if not content or not content.strip(): # 如果没有内容
+        raise APIValueError('content', 'content cannot be empty.')
+    blog.name = name.strip()
+    blog.summary = summary.strip()
+    blog.content = content.strip()
+    blog.sort = sort
+    await blog.update() # 更新数据库
+    return blog
+
+# 3.2.4 删除博客数据
+@get('/api/blog/del/{id}')
+async def delBlogData(request, *, id):
+    logging.debug('[HANDLERS] Handlering /aip/blog/del/{id} in manage_article.html ...')
+    check_admin(request) # 检查是否是管理员
+    comments = await Comment.findAll('blog_id=?', [id], orderBy='created_at desc')
+    for comment in comments:
+        await comment.delete()
+    blog = await Blog.find(id) # 查找日志数据
+    path = get_image_path('blog') # 删除图片
+    try:
+        os.remove(os.path.join(path, blog.id + '.jpg'))
+        os.remove(os.path.join(path, 'imgS_' + blog.id + '.jpg'))
+    except OSError as e:
+        logging.warn('[HANDLERS] Handlering /aip/blog/del/{id}, while ' + repr(e))
+    await blog.delete() # 删除该日志
+    return dict(id=id) # 返回被删除的日志id
+
+# 4 工具相关逻辑
+## 4.1 基本方法
+### 4.1.1 页面获取
+@get('/tool') # 工具页面获取
+async def tool():
+    logging.debug('[HANDLER] Handlering ??.html(now is undefined) ...')
+    return {
+            'images': configs.images
+            }
+    
+### 4.1.2 API 请求
+    
+    
+    
+## 4.2 图书数据库管理系统
+### 4.2.1 页面获取
+@get('/tool/library') # 报告页 tool_library.report.html
+async def tool_libaray_index():
+    logging.debug('[HANDLER] Handlering tool_library_index.html ...')
+    return {
+            '__template__': 'tool_library_index.html' # redirect to index without blogs
+            }
+
+@get('/tool/library/index') # 报告页 tool_library.report.html - 方式2
+async def tool_libaray_index2():
+    logging.debug('[HANDLER] Handlering tool_library_index.html ...')
+    return {
+            '__template__': 'tool_library_index.html' # redirect to index without blogs
+            }
+    
+@get('/tool/library/report') # 报告页 tool_library.report.html
+async def tool_libaray_report():
+    logging.debug('[HANDLER] Handlering tool_library_report.html ...')
+    return {
+            '__template__': 'tool_library_report.html'
+            }
+
+@get('/tool/library/books') # 图书页 tool_library_books.html
+async def tool_library_books():
+    logging.debug('[HANDLER] Handlering tool_library_books.html ...')
+    return {
+            '__template__': 'tool_library_books.html',
+            
+            }
+
+@get('/manage/tool/book/new') # 获取博客创建页 manage_tool_book_new.html
+async def getToolBookNew():
+    logging.debug('[HANDLER] Handlering (new) manage_tool_book_edit.html ...')
+    return {
+            '__template__': 'manage_tool_book_edit.html',
+            'book_name': '新建',
+            'book_bid': '',
+            'isNew': True
+            }
+
+@get('/manage/tool/book/edit/{bid}') # 获取博客编辑页 manage_tool_book_edit.html
+async def getToolBookEdit(bid):
+    logging.debug('[HANDLER] Handlering (edit) manage_tool_book_edit.html ...')
+    book = await Books.find(bid)
+    return {
+            '__template__': 'manage_tool_book_edit.html',
+            'book_name': book.btitle,
+            'book_bid': book.bid,
+            'book': book,
+            'isNew': False
+            }
+
+### 4.2.2 API 请求
+@get('/api/tool/books/{bsort}') # 获取图书列表
+async def getBooks(*, bsort='0', page='1'):
+    logging.debug('[HANDLER] Handlering /api/tool/books/{bsort} in tool_library_books.html ...')
+    where_sql = None
+    limit_sql = 10
+    items_sql = ['btitle', 'bauthor', 'bpublished_at', 'bsort', 'bexits', 'bread_times']
+    if bsort != '0': # 全选时
+        where_sql="bsort=" + bsort # 构造类别条件
+        page = None # 不用页码对象
+    else: # 按类别选取时，构造页码对象，并设置 limit 和 items
+        page_index = get_page_index(page)
+        logging.debug('[HANDLER]     Handlering /api/tool/books/{bsort}, the page_index is: ' + str(page_index))
+        num = await Books.findNumber('count(bid)') # 获取条目总数
+        page = Page(num, page_index, 10)
+        if num == 0: # 处理无条目的情况
+            logging.warning('[HANDLER]     No data! Database is empty!')
+            return dict(page=page, blogs=())
+        limit_sql=(page.offset, page.limit)
+    infos = await Books.findAll(where=where_sql, limit=limit_sql, orderBy='bpublished_at desc', items=items_sql)
+    return {
+            'infos': infos, # 图书数据，不带有模板，在 app.py 内的 ResponseFactory 内会自动转换为 json
+            'page': page
+            }
+    
+@post('/api/tool/book/new') # 新增图书
+async def createBookData(request, *, btitle, bauthor, bpublisher, bpublished_at, bsort, bexits, bread_times):
+    logging.debug('[HANDLERS] Handlering /aip/blog/new in manage_blog_edit.html ...')
+    check_admin(request) # 检查是否是管理员
+    if not btitle or not btitle.strip(): # 如果没有名字
+        raise APIValueError('name', 'name cannot be empty.')
+    if not bauthor or not bauthor.strip(): # 如果没有标题
+        raise APIValueError('summary', 'summary cannot be empty.')
+    if not bpublisher or not bpublisher.strip(): # 如果没有内容
+        raise APIValueError('content', 'content cannot be empty.')
+    # 创建图书
+    book = Books(bid = next_id(), btitle=btitle.strip(), bauthor=bauthor.strip(), bpublisher=bpublisher, bpublished_at=bpublished_at, bsort=bsort, bexits=bexits, bread_times=bread_times)
+    await book.save()
+    return book
+    
+@post('/api/tool/book/edit/{bid}') # 修改图书数据
+async def editBookData(bid, request, *, btitle, bauthor, bpublisher, bpublished_at, bsort, bexits, bread_times):
+    logging.debug('[HANDLERS] Handlering /aip/tool/book/edit/{id} in tool_library_books.html ...')
+    check_admin(request) # 检查是否是管理员
+    book = await Books.find(id) # 查找要修改的图书数据
+    if not btitle or not btitle.strip(): # 如果没有书名
+        raise APIValueError('name', 'name cannot be empty.')
+    if not bauthor or not bauthor.strip(): # 如果没有作者
+        raise APIValueError('summary', 'summary cannot be empty.')
+    if not bpublisher or not bpublisher.strip(): # 如果没有出版社
+        raise APIValueError('content', 'content cannot be empty.')
+    book.btitle = btitle.strip()
+    book.bauthor = bauthor.strip()
+    book.bpublisher = bpublisher.strip()
+    book.bpublished_at = bpublished_at
+    book.bsort = bsort
+    book.bexits = bexits
+    book.bread_times=bread_times
+    await book.update() # 更新数据库
+    return book
+
+@get('/api/tool/book/del/{id}') # 删除图书数据
+async def delBookData(request, *, id):
+    logging.debug('[HANDLERS] Handlering /api/tool/book/del/{id} in tool_library_books.html ...')
+    check_admin(request) # 检查是否是管理员
+    book = await Books.find(id) # 查找图书数据
+    await book.delete() # 删除该图书
+    return dict(id=id) # 返回被删除的图书id
+    
+
+# 5 后台管理相关
+## 5.1 页面请求
+### 5.1.1 获取后台管理页 manage.html
+@get('/manage/article')
+async def manage():
+    logging.debug('[HANDLER] Handlering manage.html ...')
+    return {
+            '__template__': 'manage_article.html'
+            }
+    
+## 5.2 API 请求
+def check_admin(request):  # 验证管理员身份
+    if request.__user__ is None or not request.__user__.admin:
+        raise APIPermissionError()

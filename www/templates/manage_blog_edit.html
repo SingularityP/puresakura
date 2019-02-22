@@ -1,10 +1,11 @@
-﻿{% extends 'base_blog.html' %}
+﻿{% extends 'base.html' %}
 
 {% block title %}[编辑] {( blog_name )}{% endblock %}
 
 {% block beforehead %}
 <link rel="stylesheet" href="/static/css/editormd.min.css" type="text/css" />
 <style>
+
     /* Form */
     form {
         margin: 0;
@@ -15,384 +16,9 @@
         vertical-align: baseline;
     }
 
-    /* Form 2 */
-
-    form {
-        margin: 0 0 2.5rem 0;
-    }
-
-        form .field {
-            margin: 0 0 1.5rem 0;
-        }
-
-            form .field.half {
-                width: 50%;
-                float: left;
-                padding: 0 0 0 0.75rem;
-            }
-
-                form .field.half.first {
-                    padding: 0 0.75rem 0 0;
-                }
-
-        form > .actions {
-            margin: 1.875rem 0 0 0 !important;
-        }
-
-    @media screen and (max-width: 736px) {
-
-        form .field {
-            margin: 0 0 1.125rem 0;
-        }
-
-            form .field.half {
-                padding: 0 0 0 0.5625rem;
-            }
-
-                form .field.half.first {
-                    padding: 0 0.5625rem 0 0;
-                }
-
-        form > .actions {
-            margin: 1.5rem 0 0 0 !important;
-        }
-    }
-
-    @media screen and (max-width: 480px) {
-
-        form .field.half {
-            width: 100%;
-            float: none;
-            padding: 0;
-        }
-
-            form .field.half.first {
-                padding: 0;
-            }
-    }
-
-    label {
-        color: #ffffff;
-        display: block;
-        font-size: 0.8rem;
-        font-weight: 300;
-        letter-spacing: 0.2rem;
-        line-height: 1.5;
-        margin: 0 0 1rem 0;
-        text-transform: uppercase;
-    }
-
-    input[type="text"],
-    input[type="password"],
-    input[type="email"],
-    input[type="tel"],
-    select,
-    textarea {
-        -moz-appearance: none;
-        -webkit-appearance: none;
-        -ms-appearance: none;
-        appearance: none;
-        -moz-transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, background-color 0.2s ease-in-out;
-        -webkit-transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, background-color 0.2s ease-in-out;
-        -ms-transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, background-color 0.2s ease-in-out;
-        transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, background-color 0.2s ease-in-out;
-        background: transparent;
-        border-radius: 4px;
-        border: solid 1px #ffffff;
-        color: inherit;
-        display: block;
-        outline: 0;
-        padding: 0 1rem;
-        text-decoration: none;
-        width: 100%;
-    }
-
-        input[type="text"]:invalid,
-        input[type="password"]:invalid,
-        input[type="email"]:invalid,
-        input[type="tel"]:invalid,
-        select:invalid,
-        textarea:invalid {
-            box-shadow: none;
-        }
-
-        input[type="text"]:focus,
-        input[type="password"]:focus,
-        input[type="email"]:focus,
-        input[type="tel"]:focus,
-        select:focus,
-        textarea:focus {
-            background: rgba(255, 255, 255, 0.075);
-            border-color: #ffffff;
-            box-shadow: 0 0 0 1px #ffffff;
-        }
-
-        select option {
-            background: #1b1f22;
-            color: #ffffff;
-        }
-
-    .select-wrapper {
-        text-decoration: none;
-        display: block;
-        position: relative;
-    }
-
-        .select-wrapper:before {
-            -moz-osx-font-smoothing: grayscale;
-            -webkit-font-smoothing: antialiased;
-            font-family: FontAwesome;
-            font-style: normal;
-            font-weight: normal;
-            text-transform: none !important;
-        }
-
-        .select-wrapper:before {
-            color: #ffffff;
-            content: '\f107';
-            display: block;
-            height: 2.75rem;
-            line-height: calc(2.75rem + 0em);
-            pointer-events: none;
-            position: absolute;
-            right: 0;
-            text-align: center;
-            top: 0;
-            width: 2.75rem;
-        }
-
-        .select-wrapper select::-ms-expand {
-            display: none;
-        }
-
-    input[type="text"],
-    input[type="password"],
-    input[type="email"],
-    select {
-        height: 2.75rem;
-    }
-
-    textarea {
-        padding: 0.75rem 1rem;
-    }
-
-    input[type="checkbox"],
-    input[type="radio"] {
-        -moz-appearance: none;
-        -webkit-appearance: none;
-        -ms-appearance: none;
-        appearance: none;
-        display: block;
-        float: left;
-        margin-right: -2rem;
-        opacity: 0;
-        width: 1rem;
-        z-index: -1;
-    }
-
-        input[type="checkbox"] + label,
-        input[type="radio"] + label {
-            text-decoration: none;
-            -moz-user-select: none;
-            -webkit-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-            color: #ffffff;
-            cursor: pointer;
-            display: inline-block;
-            font-size: 0.8rem;
-            font-weight: 300;
-            margin: 0 0 0.5rem 0;
-            padding-left: 2.65rem;
-            padding-right: 0.75rem;
-            position: relative;
-        }
-
-            input[type="checkbox"] + label:before,
-            input[type="radio"] + label:before {
-                -moz-osx-font-smoothing: grayscale;
-                -webkit-font-smoothing: antialiased;
-                font-family: FontAwesome;
-                font-style: normal;
-                font-weight: normal;
-                text-transform: none !important;
-            }
-
-            input[type="checkbox"] + label:before,
-            input[type="radio"] + label:before {
-                -moz-transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, background-color 0.2s ease-in-out;
-                -webkit-transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, background-color 0.2s ease-in-out;
-                -ms-transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, background-color 0.2s ease-in-out;
-                transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, background-color 0.2s ease-in-out;
-                border-radius: 4px;
-                border: solid 1px #ffffff;
-                content: '';
-                display: inline-block;
-                height: 1.65rem;
-                left: 0;
-                line-height: calc(1.58125rem + 0em);
-                position: absolute;
-                text-align: center;
-                top: -0.125rem;
-                width: 1.65rem;
-            }
-
-        input[type="checkbox"]:checked + label:before,
-        input[type="radio"]:checked + label:before {
-            background: #ffffff !important;
-            border-color: #ffffff !important;
-            color: #1b1f22;
-            content: '\f00c';
-        }
-
-        input[type="checkbox"]:focus + label:before,
-        input[type="radio"]:focus + label:before {
-            background: rgba(255, 255, 255, 0.075);
-            border-color: #ffffff;
-            box-shadow: 0 0 0 1px #ffffff;
-        }
-
-        input[type="checkbox"] + label:before {
-            border-radius: 4px;
-        }
-
-        input[type="radio"] + label:before {
-            border-radius: 100%;
-        }
-
-    ::-webkit-input-placeholder {
-        color: rgba(255, 255, 255, 0.5) !important;
-        opacity: 1.0;
-    }
-
-    :-moz-placeholder {
-        color: rgba(255, 255, 255, 0.5) !important;
-        opacity: 1.0;
-    }
-
-    ::-moz-placeholder {
-        color: rgba(255, 255, 255, 0.5) !important;
-        opacity: 1.0;
-    }
-
-    :-ms-input-placeholder {
-        color: rgba(255, 255, 255, 0.5) !important;
-        opacity: 1.0;
-    }
-
-    .formerize-placeholder {
-        color: rgba(255, 255, 255, 0.5) !important;
-        opacity: 1.0;
-    }
-
-    /* Button */
-
-    input[type="submit"],
-    input[type="reset"],
-    input[type="button"],
-    button,
-    .button {
-        -moz-appearance: none;
-        -webkit-appearance: none;
-        -ms-appearance: none;
-        appearance: none;
-        -moz-transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
-        -webkit-transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
-        -ms-transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
-        transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
-        background-color: transparent;
-        border-radius: 4px;
-        border: 0;
-        box-shadow: inset 0 0 0 1px #ffffff;
-        color: #ffffff !important;
-        cursor: pointer;
-        display: inline-block;
-        font-size: 0.8rem;
-        font-weight: 300;
-        height: 2.75rem;
-        letter-spacing: 0.2rem;
-        line-height: 2.75rem;
-        outline: 0;
-        padding: 0 1.25rem 0 1.35rem;
-        text-align: center;
-        text-decoration: none;
-        text-transform: uppercase;
-        white-space: nowrap;
-    }
-
-        input[type="submit"]:hover,
-        input[type="reset"]:hover,
-        input[type="button"]:hover,
-        button:hover,
-        .button:hover {
-            background-color: rgba(255, 255, 255, 0.075);
-        }
-
-        input[type="submit"]:active,
-        input[type="reset"]:active,
-        input[type="button"]:active,
-        button:active,
-        .button:active {
-            background-color: rgba(255, 255, 255, 0.175);
-        }
-
-        input[type="submit"].icon:before,
-        input[type="reset"].icon:before,
-        input[type="button"].icon:before,
-        button.icon:before,
-        .button.icon:before {
-            margin-right: 0.5em;
-        }
-
-        input[type="submit"].fit,
-        input[type="reset"].fit,
-        input[type="button"].fit,
-        button.fit,
-        .button.fit {
-            display: block;
-            margin: 0 0 1rem 0;
-            width: 100%;
-        }
-
-        input[type="submit"].special,
-        input[type="reset"].special,
-        input[type="button"].special,
-        button.special,
-        .button.special {
-            background-color: #ffffff;
-            color: #1b1f22 !important;
-            font-weight: 600;
-        }
-
-        input[type="submit"].disabled, input[type="submit"]:disabled,
-        input[type="reset"].disabled,
-        input[type="reset"]:disabled,
-        input[type="button"].disabled,
-        input[type="button"]:disabled,
-        button.disabled,
-        button:disabled,
-        .button.disabled,
-        .button:disabled {
-            -moz-pointer-events: none;
-            -webkit-pointer-events: none;
-            -ms-pointer-events: none;
-            pointer-events: none;
-            cursor: default;
-            opacity: 0.25;
-        }
-
-    input[type="submit"],
-    input[type="reset"],
-    input[type="button"],
-    button {
-        line-height: calc(2.75rem - 2px);
-    }
-
     /* Editor */
     /* Form editor */
     #form_editor {
-        position: relative;
-        z-index: 5;
         padding: 0.2rem 5% 1rem 5%;
         float: left;
         width: 30%;
@@ -412,8 +38,6 @@
 
     /* Image editor */
     #img_editor {
-        position: relative;
-        z-index: 5;
         padding: 2.2rem 5% 1rem 0;
         float: left;
         width: 30%;
@@ -437,6 +61,7 @@
         margin: 3px 0 0 0;
         font-size: 0.8rem;
     }
+
 </style>
 {% endblock %}
 
@@ -490,48 +115,62 @@
 
 <script src="/static/js/jquery.min.js"></script>
 <script src="/static/js/editormd.min.js"></script>
-<script src="/static/js/vue.js"></script>
-<script src="/static/js/axios.js"></script>
+<script src="/static/js/vue.min.js"></script>
+<script src="/static/js/axios.min.js"></script>
 <script>
 
     // Markdown Editor
 
-    var md_editor = editormd("md_editor", {
-        placeholder: '本编辑器支持 Markdown 编辑，左边编写，右边预览',
-        width: "90%",
-        height: 640,
-        syncScrolling: "single",
-        path: "/static/lib/",
-        theme: "dark",
-        previewTheme: "dark",
-        editorTheme: "pastel-on-dark",
-        saveHTMLToTextarea: true,
-        imageUpload: true,
-        imageFormats: ["jpg", "jpeg", "gif", "png", "bmp", "webp"],
-        imageUploadURL: "/api/blog/img",
-        emoji: false,
-        taskList: true,
-        tocm: true,
-        tex: true,
-        flowChart: true,
-        sequenceDiagram: true,
-        toolbarIcons: function () {
-            return editormd.toolbarModes['full'];
-        },
-    });
+        var md_editor = editormd("md_editor", {
+            placeholder: '本编辑器支持 Markdown 编辑，左边编写，右边预览',
+            width: "90%",
+            height: 800,
+            syncScrolling: "single",
+            path: "/static/lib/",
+            theme: "dark",
+            previewTheme: "dark",
+            editorTheme: "pastel-on-dark",
+            saveHTMLToTextarea: true,
+            imageUpload: true,
+            imageFormats: ["jpg", "jpeg", "gif", "png", "bmp", "webp"],
+            imageUploadURL: "/api/blog/img",
+            emoji: false,
+            taskList: true,
+            tocm: true,
+            tex: true,
+            flowChart: true,
+            sequenceDiagram: true,
+            toolbarIcons: function () {
+                return editormd.toolbarModes['full'];
+            },
+        });
 
     // Editor
 
         var editor = new Vue({
             el: "#editor",
+            {% if isNew %}
             data: {
                 name: '',
                 summary: '',
                 content: '',
                 sort: '',
                 img_file: null,
-                infomation: '图片处理信息'
+                img_url: '',
+                infomation: '图片处理信息',
+                url: '/api/blog/new'
             },
+            {% else %}
+            data: {
+                name: '{( blog.name )}',
+                summary: '{( blog.summary )}',
+                content: `{( blog.content )}`,
+                sort: '{( blog.sort )}',
+                img_file: null,
+                infomation: '图片处理信息',
+                url: '/api/blog/edit/' + '{( blog.id )}'
+            },
+            {% endif %}
             methods: {
                 fileChange: function (event) {
                     // 获取节点
@@ -587,19 +226,19 @@
                             'Content-Type': 'multipart/form-data'
                         }
                     }
-                    axios.post('/api/blog/new', formdata, config)
-                        .then(function (response) {
-                            this.infomation = "图片上传成功";
-                        })
-                        .catch(function (err) {
-                            this.infomation = "图片上传失败";
-                            console.log(err);
-                        });
-                    
+                    axios.post(this.url, formdata, config)
+                        .then(response => { this.infomation = "图片上传成功"; })
+                        .catch(err => { this.infomation = "图片上传失败"; console.log(err); });
                 }
+            },
+            mounted: function() {
+                document.getElementsByClassName("editormd-markdown-textarea")[0].innerHTML = this.content;
             }
         });
 
+    {% if not isNew %}
+        document.getElementById('img_preview').style.backgroundImage = 'url({( images.blog_path )}{( blog_id )}.jpg)';
+    {% endif %}
 
 </script>
 

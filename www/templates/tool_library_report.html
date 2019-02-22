@@ -1,0 +1,205 @@
+﻿{% extends 'tool_library.html' %}
+
+{% block title %}{( super() )}{% endblock %}
+
+{% block beforehead %}
+
+{( super() )}
+
+<style>
+
+    /* 1 */
+
+    #controller {
+        position: relative;
+        margin: 2rem 1rem 4rem 10rem;
+    }
+
+    /* 1.1 信息总览 */
+
+    #info_all {
+        margin: 0 0 2rem 0;
+    }
+
+        #info_all div {
+            position: relative;
+        }
+
+        #info_all span {
+            position: absolute;
+            top: 2rem;
+            left: 8rem;
+            width: 100%;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+    /* 1.2 状态 */
+
+    #info_status {
+        font-size: 0.8rem;
+        margin: 0 0 2rem 0;
+    }
+
+    /* 1.3 系统信息 */
+
+    .table-responsive {
+        font-size: 0.7rem;
+    }
+
+        .table-responsive a {
+            border-bottom: none;
+        }
+
+    /* 1.4 日志信息 */
+
+
+    /* 全局 */
+
+    #footer {
+        display: none;
+    }
+
+    .unused {
+        opacity: 0.25;
+    }
+
+        .unused a:hover {
+            background: -moz-linear-gradient(top, rgba(67, 67, 69, 0.6), rgba(47, 48, 50, 0.6));
+            background: -webkit-linear-gradient(top, rgba(67, 67, 69, 0.6), rgba(47, 48, 50, 0.6));
+            background: -o-linear-gradient(top, rgba(67, 67, 69, 0.6), rgba(47, 48, 50, 0.6));
+            background: linear-gradient(top, rgba(67, 67, 69, 0.6), rgba(47, 48, 50, 0.6));
+        }
+
+    .used a {
+        background: -moz-linear-gradient(top, rgba(67, 67, 69, 0.95), rgba(47, 48, 50, 0.95));
+        background: -webkit-linear-gradient(top, rgba(67, 67, 69, 0.95), rgba(47, 48, 50, 0.95));
+        background: -o-linear-gradient(top, rgba(67, 67, 69, 0.95), rgba(47, 48, 50, 0.95));
+        background: linear-gradient(top, rgba(67, 67, 69, 0.95), rgba(47, 48, 50, 0.95));
+    }
+
+        .used a:hover {
+            background: -moz-linear-gradient(top, rgba(67, 67, 69, 0.95), rgba(47, 48, 50, 0.95));
+            background: -webkit-linear-gradient(top, rgba(67, 67, 69, 0.95), rgba(47, 48, 50, 0.95));
+            background: -o-linear-gradient(top, rgba(67, 67, 69, 0.95), rgba(47, 48, 50, 0.95));
+            background: linear-gradient(top, rgba(67, 67, 69, 0.95), rgba(47, 48, 50, 0.95));
+        }
+
+</style>
+
+{% endblock %}
+
+{% block section %}
+
+<div id="controller">
+
+    <!-- Info all -->
+
+    <h3 class="page_header">信息总览</h3>
+    <hr class="divider" />
+
+    <div id="info_all" class="grid grid-1-4">
+        <div>
+            <h4>图书总数</h4>
+            <span>0 本</span>
+        </div>
+        <div>
+            <h4>借阅数</h4>
+            <span>0 本</span>
+        </div>
+        <div>
+            <h4>借阅人次</h4>
+            <span>0 人</span>
+        </div>
+        <div>
+            <h4>待上架处理</h4>
+            <span>0 本</span>
+        </div>
+    </div>
+
+    <!-- Info status -->
+
+    <h3 class="page_header">状态</h3>
+    <hr class="divider" />
+
+    <div id="info_status">
+        <div>登陆者： {{  }}，这是您第 {{  }} 次登录</div>
+        <div>上次登录时间：{{  }}，上次登录 IP：{{  }}</div>
+    </div>
+
+    <!-- Info system -->
+
+    <h3 class="page_header">系统信息</h3>
+    <hr class="divider" />
+
+    <div id="info_system">
+        <table class="table-responsive">
+            <tbody>
+                <tr>
+                    <td>管理员个数:</td>
+                    <td>2 人</td>
+                    <td>服务器软件:</td>
+                    <td>Apache/2.4.10 (Win32) OpenSSL/1.0.1i mod_fcgid/2.3.9</td>
+                </tr>
+                <tr>
+                    <td>浏览器:</td>
+                    <td>Chrome47</td>
+                    <td>PHP版本:</td>
+                    <td>5.6.1</td>
+                </tr>
+                <tr>
+                    <td>操作系统:</td>
+                    <td>Windows 10</td>
+                    <td>PHP运行方式:</td>
+                    <td>CGI-FCGI</td>
+                </tr>
+                <tr>
+                    <td>登录者IP:</td>
+                    <td>::1:55570</td>
+                    <td>MYSQL版本:</td>
+                    <td>5.5.40</td>
+                </tr>
+                <tr>
+                    <td>程序版本:</td>
+                    <td class="version">YlsatCMS 1.0 <font size="-6" color="#BBB">(20160108160215)</font></td>
+                    <td>上传文件:</td>
+                    <td>可以 <font size="-6" color="#BBB">(最大文件：2M ，表单：8M )</font></td>
+                </tr>
+                <tr>
+                    <td>程序编码:</td>
+                    <td>UTF-8</td>
+                    <td>当前时间:</td>
+                    <td>2016-01-08 15:50:30</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Info diary -->
+
+    <h3 class="page_header">日志信息</h3>
+    <hr class="divider" />
+
+    <div id="info_diary">
+        <table class="table-responsive">
+            <tbody>
+                <tr><td>2019-2-21 00:20:00 - 添加书目 3 条</td></tr>
+                <tr><td>2019-2-21 00:00:00 - 添加管理员账户</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block afterhead %}
+
+{( super() )}
+
+<script>
+
+    document.getElementById("li_report").style.backgroundColor = 'rgba(255, 255, 255, 0.175)';
+
+</script>
+
+{% endblock %}

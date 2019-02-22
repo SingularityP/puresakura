@@ -10,6 +10,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
     <link rel="stylesheet" href="../static/css/main.css" type="text/css" />
+    <link rel="stylesheet" href="/static/css/main2.css" type="text/css" />
     <!--[if lte IE 9]><link rel="stylesheet" href="../static/css/ie9.css" /><![endif]-->
     <noscript><link rel="stylesheet" href="../static/css/noscript.css" /></noscript>
 </head>
@@ -20,18 +21,14 @@
 
         {% if __user__ %}
             {% if __user__.admin %}
-            <a href="/manage">管理</a>
+            <a href="/manage/article">管理</a>
             {% endif %}
-        <a href="/api/signout">登出</a>
+        <a href="/api/signout">退出</a>
         {% else %}
         <a href="#signin">登录</a> &nbsp;
         <a href="#register">注册</a>
         {% endif %}
 
-        <!--
-        <a href="#signin">登录</a> &nbsp;
-        <a href="#register">注册</a>
-            -->
     </div>
 
     <!-- Wrapper -->
@@ -91,7 +88,7 @@
             <!-- Life -->
             <article id="life">
                 <section v-if="errored">
-                    <p>We're sorry, we're not able to retrieve this information at the moment, please try back later</p>
+                    <p>We're sorry, we're not able to retrieve this information at the moment, please try back later.</p>
                 </section>
                 <section v-else>
                     <div v-if="loading">Loading...</div>
@@ -104,32 +101,60 @@
             </article>
 
             <!-- Tool -->
-            <article id="tool">
-                <h2 class="major">Contact</h2>
-                <form method="post" action="#">
-                    <div class="field half first">
-                        <label for="name">Name</label>
-                        <input type="text" name="name" id="name" />
+            <article id="tool" style="width:60rem;">
+                <section v-if="errored">
+                    <p>We're sorry, we're not able to retrieve this information at the moment, please try back later.</p>
+                </section>
+                <div class="tools grid grid-1-4">
+                    <div class="grid-1-4">
+                        <a href="/tool/library">
+                            <div class="grid-1-2 imgmask" data-text="图书管理系统">
+                                <img :src="'..' + images.tool_path + 'imgS_tool1.jpg'" alt="工具1" />
+                            </div>
+                        </a>
+                        <a href="#">
+                            <div class="grid-1-2 imgmask" data-text="工具2">
+                                <img :src="'..' + images.tool_path + 'imgS_tool2.jpg'" alt="工具2" />
+                            </div>
+                        </a>
                     </div>
-                    <div class="field half">
-                        <label for="email">Email</label>
-                        <input type="text" name="email" id="email" />
+                    <div class="grid-1-4">
+                        <a href="#">
+                            <div class="grid-1-2 imgmask" data-text="工具3">
+                                <img :src="'..' + images.tool_path + 'imgS_tool3.jpg'" alt="工具3" />
+                            </div>
+                        </a>
+                        <a href="#">
+                            <div class="grid-1-2 imgmask" data-text="工具4">
+                                <img :src="'..' + images.tool_path + 'imgS_tool4.jpg'" alt="工具4" />
+                            </div>
+                        </a>
                     </div>
-                    <div class="field">
-                        <label for="message">Message</label>
-                        <textarea name="message" id="message" rows="4"></textarea>
+                    <div class="grid-1-4">
+                        <a href="#">
+                            <div class="grid-1-2 imgmask" data-text="工具5">
+                                <img :src="'..' + images.tool_path + 'imgS_tool5.jpg'" alt="工具5" />
+                            </div>
+                        </a>
+                        <a href="#">
+                            <div class="grid-1-2 imgmask" data-text="工具6">
+                                <img :src="'..' + images.tool_path + 'imgS_tool6.jpg'" alt="工具6" />
+                            </div>
+                        </a>
                     </div>
-                    <ul class="actions">
-                        <li><input type="submit" value="Send Message" class="special" /></li>
-                        <li><input type="reset" value="Reset" /></li>
-                    </ul>
-                </form>
-                <ul class="icons">
-                    <li><a href="#" class="icon fa-twitter"><span class="label">Twitter</span></a></li>
-                    <li><a href="#" class="icon fa-facebook"><span class="label">Facebook</span></a></li>
-                    <li><a href="#" class="icon fa-instagram"><span class="label">Instagram</span></a></li>
-                    <li><a href="#" class="icon fa-github"><span class="label">GitHub</span></a></li>
-                </ul>
+                    <div class="grid-1-4">
+                        <a href="#">
+                            <div class="grid-1-2 imgmask" data-text="工具7">
+                                <img :src="'..' + images.tool_path + 'imgS_tool7.jpg'" alt="工具7" />
+                            </div>
+                        </a>
+                        <a href="#">
+                            <div class="grid-1-2 imgmask" data-text="工具8">
+                                <img :src="'..' + images.tool_path + 'imgS_tool8.jpg'" alt="工具8" />
+                            </div>
+                        </a>
+                    </div>
+                </div>
             </article>
 
             <!-- Signin -->
@@ -176,256 +201,12 @@
                 </form>
             </article>
 
-            <!-- Elements -->
-            <article id="elements">
-                <h2 class="major">Elements</h2>
-
-                <section>
-                    <h3 class="major">Text</h3>
-                    <p>
-                        This is <b>bold</b> and this is <strong>strong</strong>. This is <i>italic</i> and this is <em>emphasized</em>.
-                        This is <sup>superscript</sup> text and this is <sub>subscript</sub> text.
-                        This is <u>underlined</u> and this is code: <code>for (;;) { ... }</code>. Finally, <a href="#">this is a link</a>.
-                    </p>
-                    <hr />
-                    <h2>Heading Level 2</h2>
-                    <h3>Heading Level 3</h3>
-                    <h4>Heading Level 4</h4>
-                    <h5>Heading Level 5</h5>
-                    <h6>Heading Level 6</h6>
-                    <hr />
-                    <h4>Blockquote</h4>
-                    <blockquote>Fringilla nisl. Donec accumsan interdum nisi, quis tincidunt felis sagittis eget tempus euismod. Vestibulum ante ipsum primis in faucibus vestibulum. Blandit adipiscing eu felis iaculis volutpat ac adipiscing accumsan faucibus. Vestibulum ante ipsum primis in faucibus lorem ipsum dolor sit amet nullam adipiscing eu felis.</blockquote>
-                    <h4>Preformatted</h4>
-                    <pre><code>i = 0;
-
-while (!deck.isInOrder()) {
-    print 'Iteration ' + i;
-    deck.shuffle();
-    i++;
-}
-
-print 'It took ' + i + ' iterations to sort the deck.';</code></pre>
-                </section>
-
-                <section>
-                    <h3 class="major">Lists</h3>
-
-                    <h4>Unordered</h4>
-                    <ul>
-                        <li>Dolor pulvinar etiam.</li>
-                        <li>Sagittis adipiscing.</li>
-                        <li>Felis enim feugiat.</li>
-                    </ul>
-
-                    <h4>Alternate</h4>
-                    <ul class="alt">
-                        <li>Dolor pulvinar etiam.</li>
-                        <li>Sagittis adipiscing.</li>
-                        <li>Felis enim feugiat.</li>
-                    </ul>
-
-                    <h4>Ordered</h4>
-                    <ol>
-                        <li>Dolor pulvinar etiam.</li>
-                        <li>Etiam vel felis viverra.</li>
-                        <li>Felis enim feugiat.</li>
-                        <li>Dolor pulvinar etiam.</li>
-                        <li>Etiam vel felis lorem.</li>
-                        <li>Felis enim et feugiat.</li>
-                    </ol>
-                    <h4>Icons</h4>
-                    <ul class="icons">
-                        <li><a href="#" class="icon fa-twitter"><span class="label">Twitter</span></a></li>
-                        <li><a href="#" class="icon fa-facebook"><span class="label">Facebook</span></a></li>
-                        <li><a href="#" class="icon fa-instagram"><span class="label">Instagram</span></a></li>
-                        <li><a href="#" class="icon fa-github"><span class="label">Github</span></a></li>
-                    </ul>
-
-                    <h4>Actions</h4>
-                    <ul class="actions">
-                        <li><a href="#" class="button special">Default</a></li>
-                        <li><a href="#" class="button">Default</a></li>
-                    </ul>
-                    <ul class="actions vertical">
-                        <li><a href="#" class="button special">Default</a></li>
-                        <li><a href="#" class="button">Default</a></li>
-                    </ul>
-                </section>
-
-                <section>
-                    <h3 class="major">Table</h3>
-                    <h4>Default</h4>
-                    <div class="table-wrapper">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Description</th>
-                                    <th>Price</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>Item One</td>
-                                    <td>Ante turpis integer aliquet porttitor.</td>
-                                    <td>29.99</td>
-                                </tr>
-                                <tr>
-                                    <td>Item Two</td>
-                                    <td>Vis ac commodo adipiscing arcu aliquet.</td>
-                                    <td>19.99</td>
-                                </tr>
-                                <tr>
-                                    <td>Item Three</td>
-                                    <td> Morbi faucibus arcu accumsan lorem.</td>
-                                    <td>29.99</td>
-                                </tr>
-                                <tr>
-                                    <td>Item Four</td>
-                                    <td>Vitae integer tempus condimentum.</td>
-                                    <td>19.99</td>
-                                </tr>
-                                <tr>
-                                    <td>Item Five</td>
-                                    <td>Ante turpis integer aliquet porttitor.</td>
-                                    <td>29.99</td>
-                                </tr>
-                            </tbody>
-                            <tfoot>
-                                <tr>
-                                    <td colspan="2"></td>
-                                    <td>100.00</td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
-
-                    <h4>Alternate</h4>
-                    <div class="table-wrapper">
-                        <table class="alt">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Description</th>
-                                    <th>Price</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>Item One</td>
-                                    <td>Ante turpis integer aliquet porttitor.</td>
-                                    <td>29.99</td>
-                                </tr>
-                                <tr>
-                                    <td>Item Two</td>
-                                    <td>Vis ac commodo adipiscing arcu aliquet.</td>
-                                    <td>19.99</td>
-                                </tr>
-                                <tr>
-                                    <td>Item Three</td>
-                                    <td> Morbi faucibus arcu accumsan lorem.</td>
-                                    <td>29.99</td>
-                                </tr>
-                                <tr>
-                                    <td>Item Four</td>
-                                    <td>Vitae integer tempus condimentum.</td>
-                                    <td>19.99</td>
-                                </tr>
-                                <tr>
-                                    <td>Item Five</td>
-                                    <td>Ante turpis integer aliquet porttitor.</td>
-                                    <td>29.99</td>
-                                </tr>
-                            </tbody>
-                            <tfoot>
-                                <tr>
-                                    <td colspan="2"></td>
-                                    <td>100.00</td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
-                </section>
-
-                <section>
-                    <h3 class="major">Buttons</h3>
-                    <ul class="actions">
-                        <li><a href="#" class="button special">Special</a></li>
-                        <li><a href="#" class="button">Default</a></li>
-                    </ul>
-                    <ul class="actions">
-                        <li><a href="#" class="button">Default</a></li>
-                        <li><a href="#" class="button small">Small</a></li>
-                    </ul>
-                    <ul class="actions">
-                        <li><a href="#" class="button special icon fa-download">Icon</a></li>
-                        <li><a href="#" class="button icon fa-download">Icon</a></li>
-                    </ul>
-                    <ul class="actions">
-                        <li><span class="button special disabled">Disabled</span></li>
-                        <li><span class="button disabled">Disabled</span></li>
-                    </ul>
-                </section>
-
-                <section>
-                    <h3 class="major">Form</h3>
-                    <form method="post" action="#">
-                        <div class="field half first">
-                            <label for="demo-name">Name</label>
-                            <input type="text" name="demo-name" id="demo-name" value="" placeholder="Jane Doe" />
-                        </div>
-                        <div class="field half">
-                            <label for="demo-email">Email</label>
-                            <input type="email" name="demo-email" id="demo-email" value="" placeholder="jane@untitled.tld" />
-                        </div>
-                        <div class="field">
-                            <label for="demo-category">Category</label>
-                            <div class="select-wrapper">
-                                <select name="demo-category" id="demo-category">
-                                    <option value="">-</option>
-                                    <option value="1">Manufacturing</option>
-                                    <option value="1">Shipping</option>
-                                    <option value="1">Administration</option>
-                                    <option value="1">Human Resources</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="field half first">
-                            <input type="radio" id="demo-priority-low" name="demo-priority" checked>
-                            <label for="demo-priority-low">Low</label>
-                        </div>
-                        <div class="field half">
-                            <input type="radio" id="demo-priority-high" name="demo-priority">
-                            <label for="demo-priority-high">High</label>
-                        </div>
-                        <div class="field half first">
-                            <input type="checkbox" id="demo-copy" name="demo-copy">
-                            <label for="demo-copy">Email me a copy</label>
-                        </div>
-                        <div class="field half">
-                            <input type="checkbox" id="demo-human" name="demo-human" checked>
-                            <label for="demo-human">Not a robot</label>
-                        </div>
-                        <div class="field">
-                            <label for="demo-message">Message</label>
-                            <textarea name="demo-message" id="demo-message" placeholder="Enter your message" rows="6"></textarea>
-                        </div>
-                        <ul class="actions">
-                            <li><input type="submit" value="Send Message" class="special" /></li>
-                            <li><input type="reset" value="Reset" /></li>
-                        </ul>
-                    </form>
-                </section>
-
-            </article>
-
         </div>
 
         <!-- Footer -->
         <footer id="footer">
             <p class="copyright">
-                &copy; 2019 Infuny
+                &copy; 2019 <a href="https://arciyuan.com">Infuny</a>
                 <br />
                 <a href="http://www.miitbeian.gov.cn/">粤ICP备18112642号</a> | Powered by <a href="https://github.com/SingularityP">PureSakura</a>
             </p>
@@ -441,15 +222,15 @@ print 'It took ' + i + ' iterations to sort the deck.';</code></pre>
     <script src="../static/js/skel.min.js"></script>
     <script src="../static/js/util.js"></script>
     <script src="../static/js/main.js"></script>
-    <script src="../static/js/vue.js"></script>
-    <script src="../static/js/axios.js"></script>
+    <script src="../static/js/vue.min.js"></script>
+    <script src="../static/js/axios.min.js"></script>
     <script src="../static/js/sha1.min.js"></script>
     <script type="text/javascript">
 
         // script for "tech" and "life" part blogs initializion.
 
         Vue.filter('datetime_filter', function (value) {
-            delta = new Date().getTime - value;
+            delta = new Date().getTime() - value*1000;
             if (delta < 60) {
                 return '1 seconds ago';
             }
@@ -462,7 +243,7 @@ print 'It took ' + i + ' iterations to sort the deck.';</code></pre>
             if (delta < 604800) {
                 return Math.round(delta / 86400) + 'days ago';
             }
-            dt = new Date(value);
+            dt = new Date(value*1000);
             return dt.getFullYear() + '-' + (dt.getMonth() + 1) + '-' + dt.getDate();
         });
 
@@ -516,6 +297,22 @@ print 'It took ' + i + ' iterations to sort the deck.';</code></pre>
                     .catch(error => { console.log(error); this.errored = true })
                     .finally(() => this.loading = false)
             }
+        });
+
+        var tool = new Vue({
+            el: '#tool',
+            data: {
+                images: '',
+                loading: true,
+                errored: false
+            },
+            mounted: function () {
+                axios
+                    .get("/tool")
+                    .then(response => { this.images = response.data.images; })
+                    .catch(error => { console.log(error); this.errored = true })
+                    .finally(() => this.loading = false)
+            }
         })
 
         // script for user register.
@@ -554,7 +351,7 @@ print 'It took ' + i + ' iterations to sort the deck.';</code></pre>
                     axios.post('/api/register', {
                         name: this.name.trim(),
                         email: this.email.trim().toLowerCase(),
-                        passwd: CryptoJS.SHA1(email + ':' + this.passwd).toString()
+                        passwd: CryptoJS.SHA1(this.email + ':' + this.passwd).toString()
                     })
                         .then(function (response) {
                             console.log(response);
@@ -584,7 +381,7 @@ print 'It took ' + i + ' iterations to sort the deck.';</code></pre>
                     }
                     axios.post('/api/signin', {
                         email: this.email.trim().toLowerCase(),
-                        passwd: this.passwd === '' ? '' : CryptoJS.SHA1(email + ':' + this.passwd).toString()
+                        passwd: this.passwd === '' ? '' : CryptoJS.SHA1(this.email + ':' + this.passwd).toString()
                     })
                         .then(function (response) {
                             console.log(response);
@@ -592,7 +389,6 @@ print 'It took ' + i + ' iterations to sort the deck.';</code></pre>
                         })
                         .catch(function (err) {
                             console.log(err);
-                            // location.assign('/');
                         })
                 }
             }

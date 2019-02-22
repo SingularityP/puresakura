@@ -31,7 +31,7 @@ class User(Model): # 定义用户模型
     admin = BooleanField() # 管理员标识
     name = StringField(column_type='varchar(50)') # 用户名称
     created_at = FloatField(default=time.time) # 账号注册时间
-   
+
 # 模型设计 - 博客模型
 class Blog(Model): # 定义博客模型
     __table__ = 'blogs'
@@ -68,3 +68,37 @@ class Reply(Model): # 回复模型
     target_name = StringField(column_type='varchar(50)') # 目标用户名称
     content = TextField() # 回复正文
     created_at = FloatField(default=time.time) # 回复创建时间
+    
+# 模型设计 - 图书模型
+class Books(Model): # 图书模型
+    __table__ = 'books'
+    
+    bid = StringField(primary_key=True, default=next_id, column_type='varchar(50)') # 图书id
+    btitle = StringField(column_type='varchar(50)') # 图书名
+    bauthor = StringField(column_type='varchar(50)') # 作者
+    bpublisher = StringField(column_type='varchar(50)') # 出版社
+    bpublished_at = FloatField(default=time.time) # 出版时间
+    bsort = StringField(column_type='varchar(50)') # 分类
+    bread_times = IntegerField() # 阅读量
+    bexits = BooleanField() # 是否在馆
+    
+# 模型设计 - 读者模型
+class Readers(Model): # 读者模型
+    __table__ = 'readers'
+    
+    rid = StringField(primary_key=True, default=next_id, column_type='varchar(50)') # 读者id
+    rname = StringField(column_type='varchar(50)') # 读者姓名
+    rsex = BooleanField() # 读者性别
+    remail = StringField(column_type='varchar(50)') # 读者邮箱
+    rrole= StringField(column_type='varchar(50)') # 读者类型
+    radmin = BooleanField() # 管理员标识
+    
+# 模型设计 - 借书表模型
+class Borrows(Model): # 借书表模型
+    __table__ = 'borrows'
+    
+    id = StringField(primary_key=True, default=next_id, column_type='varchar(50)') # 记录id
+    rid = StringField(column_type='varchar(50)') # 读者id
+    bid = StringField(column_type='varchar(50)') # 图书id
+    bborrow_time = FloatField(default=time.time) # 借出时间
+    bdue_time = FloatField(default=time.time) # 应还时间
