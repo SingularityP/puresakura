@@ -735,6 +735,13 @@ body.is-loading #footer {
         transform: translateY(0);
     }
 
+/* Sig and Reg */
+
+.errored {
+    color: red;
+    font-weight: bold;
+}
+
 /* Users */
 
 #users {

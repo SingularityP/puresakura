@@ -11,6 +11,7 @@ __author__ = 'Infuny'
 '''
 JSON API definition. 用于存储api所用到的类。
 '''
+from aiohttp import web
 
 import logging
 logging.basicConfig(level=logging.DEBUG)
@@ -57,6 +58,7 @@ class APIValueError(APIError):
     def __init__(self, field, message=''):
         logging.debug("[APIS] APIValueError.")
         super(APIValueError, self).__init__('value:invalid', field, message)
+        raise web.HTTPBadRequest(reason=field, text=message)
         
 class APIResourceNotFoundError(APIError):
     '''
@@ -65,6 +67,7 @@ class APIResourceNotFoundError(APIError):
     def __init__(self, field, message=''):
         logging.debug("[APIS] APIResourceNotFoundError.")
         super(APIResourceNotFoundError, self).__init__('value:notfound', field, message)
+        raise web.HTTPGone(reason=field, text=message)
         
 class APIPermissionError(APIError):
     '''
@@ -73,3 +76,4 @@ class APIPermissionError(APIError):
     def __init__(self, field, message=''):
         logging.debug("[APIS] APIPermissionError.")
         super(APIPermissionError, self).__init__('permission:forbidden', 'permission', message)
+        raise web.HTTPUnauthorized(reason=field, text=message)

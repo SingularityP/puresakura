@@ -89,7 +89,7 @@
             </div>
             <div class="field standar">
                 <label for="bpublisher">出版社</label>
-                <input v-model="bpublisher" type="text" placeholder="author" />
+                <input v-model="bpublisher" type="text" placeholder="publisher" />
             </div>
             <div id="bread_times" class="field">
                 <label for="bread_times">借阅量</label>
@@ -176,7 +176,7 @@
                 bexits: '{( book.bexits )}',
                 bread_times: '{( book.bread_times )}',
                 infomation: '数据处理状态',
-                url: '/api/tool/book/edit/' + '{( book.id )}',
+                url: '/api/tool/book/edit/' + '{(book.bid)}',
                 year: '',
                 month: '',
                 day: ''

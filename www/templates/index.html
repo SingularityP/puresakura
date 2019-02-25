@@ -71,7 +71,7 @@
             <!-- Tech -->
             <article id="tech">
                 <section v-if="errored">
-                    <p>We're sorry, we're not able to retrieve this information at the moment, please try back later</p>
+                    <p class="errored">We're sorry, we're not able to retrieve this information at the moment, please try back later</p>
                 </section>
                 <section v-else>
                     <div v-if="loading">Loading...</div>
@@ -88,7 +88,7 @@
             <!-- Life -->
             <article id="life">
                 <section v-if="errored">
-                    <p>We're sorry, we're not able to retrieve this information at the moment, please try back later.</p>
+                    <p class="errored">We're sorry, we're not able to retrieve this information at the moment, please try back later.</p>
                 </section>
                 <section v-else>
                     <div v-if="loading">Loading...</div>
@@ -160,6 +160,10 @@
             <!-- Signin -->
             <article id="signin">
                 <form name="form_sig" @submit.prevent="submit()">
+                    <section v-if="errored">
+                        <p class="errored">{{information}}</p>
+                    </section>
+                    <br />
                     <div class="field">
                         <label for="email">邮箱</label>
                         <input v-model="email" type="text" placeholder="Email" />
@@ -178,6 +182,10 @@
             <!-- Register -->
             <article id="register">
                 <form name="form_reg" @submit.prevent="submit()">
+                    <section v-if="errored">
+                        <p class="errored">{{information}}</p>
+                    </section>
+                    <br />
                     <div class="field">
                         <label for="name">用户名</label>
                         <input v-model="name" type="text" placeholder="Name" />
@@ -259,7 +267,7 @@
                     </div>
                     <div class="clear"></div>
                     <a :href="'/blog/'+info.id"><img :src="'..' + images.blog_path + 'imgS_' + info.id + '.jpg'" alt="图片被吞掉了！"/></a>
-                    <p class="summary">{{ info.summary }}</p>
+                    <p class="summary" style="padding: 0.25rem 0 0 0;">{{ info.summary }}</p>
                     <div class="clear"></div>
                 </div>
             `
@@ -328,24 +336,32 @@
                 name: '',
                 email: '',
                 passwd: '',
-                passwd2: ''
+                passwd2: '',
+                errored: false,
+                information: ''
             },
             methods: {
                 submit: function (event) {
+                    this.information = '';
+                    this.errored = false;
                     if (!this.name.trim()) {
-                        console.log('请输入用户名！');
+                        this.information = '请输入用户名！';
+                        this.errored = true;
                         return;
                     }
                     if (!validateEmail(this.email.trim().toLowerCase())) {
-                        console.log('请输入正确的 email 地址！');
+                        this.information = '请输入正确的邮箱地址！';
+                        this.errored = true;
                         return;
                     }
                     if (this.passwd.length < 6) {
-                        console.log('密码长度至少为 6 位！');
+                        this.information = '密码长度至少为 6 位！';
+                        this.errored = true;
                         return;
                     }
                     if (this.passwd !== this.passwd2) {
-                        console.log('两次输入的密码不一致！');
+                        this.information = '两次输入的密码不一致！';
+                        this.errored = true;
                         return;
                     }
                     axios.post('/api/register', {
@@ -354,12 +370,11 @@
                         passwd: CryptoJS.SHA1(this.email + ':' + this.passwd).toString()
                     })
                         .then(function (response) {
-                            console.log(response);
                             location.assign('/');
                         })
-                        .catch(function (err) {
-                            console.log(err);
-                            // location.assign('/api/register');
+                        .catch(err => {
+                            this.information = err.response ? err.response.data : err.response.message;
+                            this.errored = true;
                         })
                 }
             }
@@ -371,12 +386,17 @@
             el: '#signin',
             data: {
                 email: '',
-                passwd: ''
+                passwd: '',
+                errored: false,
+                information: ''
             },
             methods: {
                 submit: function (event) {
+                    this.information = '';
+                    this.errored = false;
                     if (!validateEmail(this.email.trim().toLowerCase())) {
-                        console.log('请输入正确的 email 地址！');
+                        this.information = '请输入正确的邮箱地址！';
+                        this.errored = true;
                         return;
                     }
                     axios.post('/api/signin', {
@@ -384,12 +404,12 @@
                         passwd: this.passwd === '' ? '' : CryptoJS.SHA1(this.email + ':' + this.passwd).toString()
                     })
                         .then(function (response) {
-                            console.log(response);
                             location.assign('/');
                         })
-                        .catch(function (err) {
-                            console.log(err);
-                        })
+                        .catch(err => {
+                            this.information = err.response ? err.response.data : err.response.message;
+                            this.errored = true;
+                        });
                 }
             }
         });

@@ -112,14 +112,14 @@ async def cookie2user(cookie_str): # 用来解析 Cookie
 async def api_register_user(*, email, name, passwd):
     logging.debug('[HANDLER] Handlering /api/users in index.html ...')
     if not name or not name.strip(): # 如果没有名字
-        raise APIValueError('name') # api值异常
+        raise APIValueError('name', 'Invalid name') # api值异常
     if not email or not _RE_EMAIL.match(email): # 如果与邮箱re正则不匹配
-        raise APIValueError('email') # api值异常
+        raise APIValueError('email', 'Invalid email.') # api值异常
     if not passwd or not _RE_SHA1.match(passwd): # 如果与密码re正则不匹配
-        raise APIValueError('passwd') # api值异常
+        raise APIValueError('passwd', 'Invalid passwd.') # api值异常
     users = await User.findAll('email=?', [email]) # 获取数据库中指定的用户信息
     if len(users) > 0: # 如果用户中已有数据
-        raise APIError('register:failed', 'email', 'Email is already in use.') # api逻辑异常
+        raise APIValueError('register failed', 'Email is already in use.') # api逻辑异常
     uid = next_id() # 分配唯一id
     sha1_passwd = '%s:%s' % (uid, passwd) # 制作 sha1 加密口令
     user = User(id=uid, name=name.strip(), email=email, passwd=hashlib.sha1(sha1_passwd.encode('utf-8')).hexdigest(), image='http://www.gravatar.com/avatar/%s?d=mm&s=120' % hashlib.md5(email.encode('utf-8')).hexdigest())
@@ -285,8 +285,10 @@ async def createBlogData(request, *, name, summary, content, sort, file):
         raise APIValueError('content', 'content cannot be empty.')
     # 创建博客
     blog = Blog(id = next_id(), user_id=request.__user__.id, user_name=request.__user__.name, name=name.strip(), summary=summary.strip(), content=content, sort=sort)
+    logging.debug('[HANDLERS]     Update blog before save image.')
     await blog.save()
     # 存储图片
+    logging.debug('[HANDLERS]     Type of variable file: ' + str(type(file)))
     if file != '' and file!=None:
         img_name = blog.id + '.jpg'
         img_data = file.file
@@ -316,7 +318,7 @@ async def saveMdImage(**kw):
         
 # 3.2.3 修改博客数据
 @post('/api/blog/edit/{id}')
-async def editBlogData(id, request, *, name, summary, content, sort):
+async def editBlogData(id, request, *, name, summary, content, sort, file):
     logging.debug('[HANDLERS] Handlering /aip/blog/edit/{id} in manage_article.html ...')
     check_admin(request) # 检查是否是管理员
     blog = await Blog.find(id) # 查找要修改的日志数据
@@ -330,7 +332,14 @@ async def editBlogData(id, request, *, name, summary, content, sort):
     blog.summary = summary.strip()
     blog.content = content.strip()
     blog.sort = sort
+    logging.debug('[HANDLERS]     Update blog before save image.')
     await blog.update() # 更新数据库
+    # 存储图片
+    logging.debug('[HANDLERS]     Type of variable file: ' + str(type(file)))
+    if file != '' and file!=None:
+        img_name = blog.id + '.jpg'
+        img_data = file.file
+        await saveImage(img_name, img_data, 'blog')
     return blog
 
 # 3.2.4 删除博客数据
@@ -374,7 +383,7 @@ async def tool_libaray_index():
             '__template__': 'tool_library_index.html' # redirect to index without blogs
             }
 
-@get('/tool/library/index') # 报告页 tool_library.report.html - 方式2
+@get('/tool/library/index') # 报告页 tool_library.report.html - 请求方式2
 async def tool_libaray_index2():
     logging.debug('[HANDLER] Handlering tool_library_index.html ...')
     return {
@@ -388,6 +397,8 @@ async def tool_libaray_report():
             '__template__': 'tool_library_report.html'
             }
 
+    # 图书页面
+
 @get('/tool/library/books') # 图书页 tool_library_books.html
 async def tool_library_books():
     logging.debug('[HANDLER] Handlering tool_library_books.html ...')
@@ -396,35 +407,102 @@ async def tool_library_books():
             
             }
 
-@get('/manage/tool/book/new') # 获取博客创建页 manage_tool_book_new.html
+@get('/manage/tool/book/new') # 获取图书创建页 manage_tool_book_new.html
 async def getToolBookNew():
     logging.debug('[HANDLER] Handlering (new) manage_tool_book_edit.html ...')
     return {
             '__template__': 'manage_tool_book_edit.html',
-            'book_name': '新建',
+            'book_title': '新建',
             'book_bid': '',
             'isNew': True
             }
 
-@get('/manage/tool/book/edit/{bid}') # 获取博客编辑页 manage_tool_book_edit.html
+@get('/manage/tool/book/edit/{bid}') # 获取图书编辑页 manage_tool_book_edit.html
 async def getToolBookEdit(bid):
     logging.debug('[HANDLER] Handlering (edit) manage_tool_book_edit.html ...')
     book = await Books.find(bid)
     return {
             '__template__': 'manage_tool_book_edit.html',
-            'book_name': book.btitle,
+            'book_title': book.btitle,
             'book_bid': book.bid,
             'book': book,
             'isNew': False
             }
+    
+    # 用户页面
+    
+@get('/tool/library/readers') # 用户页 tool_library_readers.html
+async def tool_library_readers():
+    logging.debug('[HANDLER] Handlering tool_library_readers.html ...')
+    return {
+            '__template__': 'tool_library_readers.html',
+            
+            }
+
+@get('/manage/tool/reader/new') # 获取用户创建页 manage_tool_reader_new.html
+async def getToolReaderNew():
+    logging.debug('[HANDLER] Handlering (new) manage_tool_reader_edit.html ...')
+    return {
+            '__template__': 'manage_tool_reader_edit.html',
+            'reader_name': '新建',
+            'reader_rid': '',
+            'isNew': True
+            }
+
+@get('/manage/tool/reader/edit/{rid}') # 获取用户编辑页 manage_tool_reader_edit.html
+async def getToolReaderEdit(rid):
+    logging.debug('[HANDLER] Handlering (edit) manage_tool_reader_edit.html ...')
+    reader = await Readers.find(rid)
+    return {
+            '__template__': 'manage_tool_reader_edit.html',
+            'reader_name': reader.rname,
+            'reader_rid': reader.rid,
+            'reader': reader,
+            'isNew': False
+            }
+    
+    # 借书表页面
+    
+@get('/tool/library/borrows') # 用户页 tool_library_borrows.html
+async def tool_library_Borrowrs():
+    logging.debug('[HANDLER] Handlering tool_library_borrowrs.html ...')
+    return {
+            '__template__': 'tool_library_borrows.html',
+            
+            }
+
+@get('/manage/tool/borrow/new') # 获取用户创建页 manage_tool_borrow_new.html
+async def getToolBorrowNew():
+    logging.debug('[HANDLER] Handlering (new) manage_tool_borrow_edit.html ...')
+    return {
+            '__template__': 'manage_tool_borrow_edit.html',
+            'borrow_name': '新建',
+            'borrow_id': '',
+            'isNew': True
+            }
+
+@get('/manage/tool/borrow/edit/{rid}') # 获取用户编辑页 manage_tool_borrow_edit.html
+async def getToolBorrowEdit(id):
+    logging.debug('[HANDLER] Handlering (edit) manage_tool_borrow_edit.html ...')
+    borrow = await Borrows.find(id)
+    return {
+            '__template__': 'manage_tool_borrow_edit.html',
+            'borrow_name': '编辑借书记录',
+            'borrow_id': borrow.id,
+            'borrow': borrow,
+            'isNew': False
+            }
 
 ### 4.2.2 API 请求
+    
+    # 图书 API
+    
 @get('/api/tool/books/{bsort}') # 获取图书列表
 async def getBooks(*, bsort='0', page='1'):
     logging.debug('[HANDLER] Handlering /api/tool/books/{bsort} in tool_library_books.html ...')
     where_sql = None
     limit_sql = 10
-    items_sql = ['btitle', 'bauthor', 'bpublished_at', 'bsort', 'bexits', 'bread_times']
+    items_sql = ['btitle', 'bauthor', 'bpublisher', 'bpublished_at', 'bsort', 'bexits', 'bread_times']
     if bsort != '0': # 全选时
         where_sql="bsort=" + bsort # 构造类别条件
         page = None # 不用页码对象
@@ -435,7 +513,7 @@ async def getBooks(*, bsort='0', page='1'):
         page = Page(num, page_index, 10)
         if num == 0: # 处理无条目的情况
             logging.warning('[HANDLER]     No data! Database is empty!')
-            return dict(page=page, blogs=())
+            return dict(page=page, books=())
         limit_sql=(page.offset, page.limit)
     infos = await Books.findAll(where=where_sql, limit=limit_sql, orderBy='bpublished_at desc', items=items_sql)
     return {
@@ -445,7 +523,7 @@ async def getBooks(*, bsort='0', page='1'):
     
 @post('/api/tool/book/new') # 新增图书
 async def createBookData(request, *, btitle, bauthor, bpublisher, bpublished_at, bsort, bexits, bread_times):
-    logging.debug('[HANDLERS] Handlering /aip/blog/new in manage_blog_edit.html ...')
+    logging.debug('[HANDLERS] Handlering /aip/tool/book/new in manage_tool_book_edit.html ...')
     check_admin(request) # 检查是否是管理员
     if not btitle or not btitle.strip(): # 如果没有名字
         raise APIValueError('name', 'name cannot be empty.')
@@ -462,7 +540,7 @@ async def createBookData(request, *, btitle, bauthor, bpublisher, bpublished_at,
 async def editBookData(bid, request, *, btitle, bauthor, bpublisher, bpublished_at, bsort, bexits, bread_times):
     logging.debug('[HANDLERS] Handlering /aip/tool/book/edit/{id} in tool_library_books.html ...')
     check_admin(request) # 检查是否是管理员
-    book = await Books.find(id) # 查找要修改的图书数据
+    book = await Books.find(bid) # 查找要修改的图书数据
     if not btitle or not btitle.strip(): # 如果没有书名
         raise APIValueError('name', 'name cannot be empty.')
     if not bauthor or not bauthor.strip(): # 如果没有作者
@@ -479,14 +557,81 @@ async def editBookData(bid, request, *, btitle, bauthor, bpublisher, bpublished_
     await book.update() # 更新数据库
     return book
 
-@get('/api/tool/book/del/{id}') # 删除图书数据
-async def delBookData(request, *, id):
+@get('/api/tool/book/del/{bid}') # 删除图书数据
+async def delBookData(request, *, bid):
     logging.debug('[HANDLERS] Handlering /api/tool/book/del/{id} in tool_library_books.html ...')
     check_admin(request) # 检查是否是管理员
-    book = await Books.find(id) # 查找图书数据
+    book = await Books.find(bid) # 查找图书数据
     await book.delete() # 删除该图书
-    return dict(id=id) # 返回被删除的图书id
+    return dict(bid=bid) # 返回被删除的图书bid
     
+    # 用户 API
+
+@get('/api/tool/readers/{rsort}') # 获取用户列表
+async def getReader(*, rsort='0', page='1'):
+    logging.debug('[HANDLER] Handlering /api/tool/readers/{rsort} in tool_library_readers.html ...')
+    where_sql = None
+    limit_sql = 10
+    items_sql = ['rname', 'rsex', 'remail', 'rrole', 'radmin']
+    if rsort != '0': # 全选时
+        where_sql="rsort=" + rsort # 构造类别条件
+        page = None # 不用页码对象
+    else: # 按类别选取时，构造页码对象，并设置 limit 和 items
+        page_index = get_page_index(page)
+        logging.debug('[HANDLER]     Handlering /api/tool/readers/{rsort}, the page_index is: ' + str(page_index))
+        num = await Readers.findNumber('count(rid)') # 获取条目总数
+        page = Page(num, page_index, 10)
+        if num == 0: # 处理无条目的情况
+            logging.warning('[HANDLER]     No data! Database is empty!')
+            return dict(page=page, readers=())
+        limit_sql=(page.offset, page.limit)
+    infos = await Readers.findAll(where=where_sql, limit=limit_sql, orderBy='radmin desc', items=items_sql)
+    return {
+            'infos': infos, # 用户数据，不带有模板，在 app.py 内的 ResponseFactory 内会自动转换为 json
+            'page': page
+            }
+
+@post('/api/tool/reader/new') # 新增用户
+async def createReaderData(request, *, rname, rsex, remail, rrole, radmin):
+    logging.debug('[HANDLERS] Handlering /aip/tool/reader/new in manage_tool_reader_edit.html ...')
+    check_admin(request) # 检查是否是管理员
+    if not rname or not rname.strip(): # 如果没有名字
+        raise APIValueError('name', 'name cannot be empty.')
+    if not rsex or not rsex.strip(): # 如果没有性别
+        raise APIValueError('summary', 'summary cannot be empty.')
+    if not remail or not remail.strip(): # 如果没有邮箱
+        raise APIValueError('content', 'content cannot be empty.')
+    # 创建图书
+    reader = Readers(rid = next_id(), rname=rname.strip(), rsex=rsex.strip(), remail=remail, rrole=rrole, radmin=radmin)
+    await reader.save()
+    return reader
+    
+@post('/api/tool/reader/edit/{rid}') # 修改用户数据
+async def editReaderData(rid, request, *, rname, rsex, remail, rrole, radmin):
+    logging.debug('[HANDLERS] Handlering /aip/tool/reader/edit/{rid} in tool_library_readers.html ...')
+    check_admin(request) # 检查是否是管理员
+    reader = await Readers.find(rid) # 查找要修改的用户数据
+    if not rname or not rname.strip(): # 如果没有名字
+        raise APIValueError('name', 'name cannot be empty.')
+    if not rsex or not rsex.strip(): # 如果没有性别
+        raise APIValueError('summary', 'summary cannot be empty.')
+    if not remail or not remail.strip(): # 如果没有邮箱
+        raise APIValueError('content', 'content cannot be empty.')
+    reader.rname = rname.strip()
+    reader.rsex = rsex.strip()
+    reader.remail = remail.strip()
+    reader.rrole = rrole
+    reader.radmin = radmin
+    await reader.update() # 更新数据库
+    return reader
+
+@get('/api/tool/reader/del/{rid}') # 删除用户数据
+async def delReaderData(request, *, rid):
+    logging.debug('[HANDLERS] Handlering /api/tool/reader/del/{rid} in tool_library_readers.html ...')
+    check_admin(request) # 检查是否是管理员
+    reader = await Readers.find(rid) # 查找用户数据
+    await reader.delete() # 删除该用户
+    return dict(rid=rid) # 返回被删除的用户rid
 
 # 5 后台管理相关
 ## 5.1 页面请求

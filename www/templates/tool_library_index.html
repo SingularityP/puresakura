@@ -15,7 +15,7 @@
     <noscript><link rel="stylesheet" href="../static/css/noscript.css" /></noscript>
     <script>
         {% if __user__ %}
-        location.assign("/tool/library/report");
+            location.assign("/tool/library/report");
         {% else %}
             location.assign("#signin");
         {% endif %}
