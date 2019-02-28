@@ -102,3 +102,5 @@ class Borrows(Model): # 借书表模型
     bid = StringField(column_type='varchar(50)') # 图书id
     bborrow_time = FloatField(default=time.time) # 借出时间
     bdue_time = FloatField(default=time.time) # 应还时间
+    breturn_time = FloatField(default=time.time) # 归还时间
+    bcomment = StringField(column_type='varchar(100)') # 评论

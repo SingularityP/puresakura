@@ -961,3 +961,16 @@
 
         /* layout */
 
+    /* Bread Cumb */
+
+        .breadcumb {
+            list-style-type: none;
+            margin: 0.5rem 0;
+            padding: 0.5rem 0 0.5rem 1rem;
+            font-size: 0.7rem;
+        }
+
+        .breadcumb li {
+            float: left;
+            margin: 0 0 0.5rem 0.5rem;
+        }

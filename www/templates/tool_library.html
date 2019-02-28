@@ -156,7 +156,7 @@
         height: 0;
     }
 
-    .dropdown:active .nav-dropdown {
+    .dropdown:hover .nav-dropdown {
         opacity: 1;
         height: auto;
     }
@@ -191,35 +191,22 @@
     <ul class="nav nav-sidebar">
         <li id="li_article"><a href="/tool/library/books">图书</a></li>
         <li id="li_anounce"><a href="/tool/library/readers">读者</a></li>
-        <li id="li_comment"><a href="comment.html">借书表</a></li>
+        <li id="li_comment"><a href="/tool/library/borrows">借书表</a></li>
         <li id="li_discuss"><a data-toggle="tooltip" title="网站暂无留言功能">留言</a></li>
     </ul>
     <ul class="nav nav-sidebar">
-        <li id="li_section"><a href="category.html">栏目</a></li>
+        <li id="li_section" class="dropdown">
+            <a href="/tool/library/data_analysis">数据分析</a>
+            <ul class="nav nav-dropdown">
+                <li><a href="#1">图书记录</a></li>
+                <li><a href="#2">借书记录</a></li>
+            </ul>
+        </li>
         <li id="li_others" class="dropdown">
             <a href="#">其他</a>
             <ul class="nav nav-dropdown">
-                <li><a href="flink.html">友情链接</a></li>
+                <li><a href="#">友情链接</a></li>
                 <li><a href="#areDeveloping">访问记录</a></li>
-            </ul>
-        </li>
-    </ul>
-    <ul class="nav nav-sidebar">
-        <li id="li_users" class="dropdown">
-            <a href="#">设备</a>
-            <ul class="nav nav-dropdown">
-                <li><a href="#areDeveloping">管理设备组</a></li>
-                <li><a href="manage-user.html">管理设备</a></li>
-                <li><a href="loginlog.html">管理设备日志</a></li>
-            </ul>
-        </li>
-        <li id="li_setting" class="dropdown">
-            <a href="#">设置</a>
-            <ul class="nav nav-dropdown">
-                <li><a href="setting.html">基本设置</a></li>
-                <li><a href="readset.html">阅读设置</a></li>
-                <li><a href="#areDeveloping">安全配置</a></li>
-                <li><a>扩展菜单</a></li>
             </ul>
         </li>
     </ul>

@@ -1,0 +1,230 @@
+﻿{% extends 'tool_library.html' %}
+
+{% block title %}{( super() )}{% endblock %}
+
+{% block beforehead %}
+
+{( super() )}
+
+<style>
+
+    /* 1 */
+
+    #controller {
+        position: relative;
+        margin: 2rem 1rem 4rem 10rem;
+    }
+
+    /* 1.1 信息总览 */
+
+    #info_all {
+        margin: 0 0 2rem 0;
+    }
+
+        #info_all div {
+            position: relative;
+        }
+
+        #info_all span {
+            position: absolute;
+            top: 2rem;
+            left: 8rem;
+            width: 100%;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+    /* 1.2 状态 */
+
+    #info_status {
+        font-size: 0.8rem;
+        margin: 0 0 2rem 0;
+    }
+
+    /* 1.3 系统信息 */
+
+    .table-responsive {
+        font-size: 0.7rem;
+    }
+
+        .table-responsive a {
+            border-bottom: none;
+        }
+
+    /* 1.4 日志信息 */
+
+
+    /* 全局 */
+
+    #footer {
+        display: none;
+    }
+
+    .unused {
+        opacity: 0.25;
+    }
+
+        .unused a:hover {
+            background: -moz-linear-gradient(top, rgba(67, 67, 69, 0.6), rgba(47, 48, 50, 0.6));
+            background: -webkit-linear-gradient(top, rgba(67, 67, 69, 0.6), rgba(47, 48, 50, 0.6));
+            background: -o-linear-gradient(top, rgba(67, 67, 69, 0.6), rgba(47, 48, 50, 0.6));
+            background: linear-gradient(top, rgba(67, 67, 69, 0.6), rgba(47, 48, 50, 0.6));
+        }
+
+    .used a {
+        background: -moz-linear-gradient(top, rgba(67, 67, 69, 0.95), rgba(47, 48, 50, 0.95));
+        background: -webkit-linear-gradient(top, rgba(67, 67, 69, 0.95), rgba(47, 48, 50, 0.95));
+        background: -o-linear-gradient(top, rgba(67, 67, 69, 0.95), rgba(47, 48, 50, 0.95));
+        background: linear-gradient(top, rgba(67, 67, 69, 0.95), rgba(47, 48, 50, 0.95));
+    }
+
+        .used a:hover {
+            background: -moz-linear-gradient(top, rgba(67, 67, 69, 0.95), rgba(47, 48, 50, 0.95));
+            background: -webkit-linear-gradient(top, rgba(67, 67, 69, 0.95), rgba(47, 48, 50, 0.95));
+            background: -o-linear-gradient(top, rgba(67, 67, 69, 0.95), rgba(47, 48, 50, 0.95));
+            background: linear-gradient(top, rgba(67, 67, 69, 0.95), rgba(47, 48, 50, 0.95));
+        }
+
+    /* 图书 */
+        /* 类别 - 南丁格尔图 */
+    .echart {
+        width: 70rem;
+        height: 30rem;
+        border: solid thin #131519b3;
+        background-color: #131519b3;
+        margin-left: auto;
+        margin-right: auto;
+        margin-top: 3rem;
+
+    }
+
+
+
+</style>
+
+{% endblock %}
+
+{% block section %}
+
+<div id="controller">
+
+    <h3 class="page_header">选项</h3>
+
+    <hr class="divider" />
+
+    <ol class="breadcumb">
+        <li><a href="#" @click="show(1)">图书类别统计</a></li>
+        <li><a href="#" @click="show(2)">图书阅读量统计</a></li>
+        <li><a href="#" @click="show(3)">借书量统计</a></li>
+    </ol>
+
+    <div style="clear:both;"></div>
+
+    <hr class="divider" />
+
+    <!-- 图书 -->
+    <!-- 类别南丁格尔图 -->
+    <div>
+        <div id="painter" class="echart"></div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block afterhead %}
+
+{( super() )}
+
+<script src="/static/js/echarts.js"></script>
+<script>
+
+    var controller = new Vue({
+        el: "#controller",
+        data: {
+        },
+        mounted: function () {
+
+
+
+        },
+        methods: {
+            show: function (num) {
+                document.getElementById("painter").style.display = 'none';
+                switch (num) {
+                    case 1:
+                        // 图书 - 类别南丁格尔
+                        echarts.init(document.getElementById('painter')).setOption({
+                            title: {
+                                text: '图书类别统计',
+                                left: 'center',
+                                top: 20,
+                                textStyle: {
+                                    color: '#ccc'
+                                }
+                            },
+                            series: [{
+                                name: '图书类别',
+                                type: 'pie',
+                                roseType: 'angle',
+                                radius: '55%',
+                                data: {(booksSort | safe)}
+                            }]
+                        });
+                        break;
+                    case 2:
+                        // 图书 - 阅读量南丁格尔
+                        echarts.init(document.getElementById('painter')).setOption({
+                            title: {
+                                text: '图书阅读量统计',
+                                left: 'center',
+                                top: 20,
+                                textStyle: {
+                                    color: '#ccc'
+                                }
+                            },
+                            series: [{
+                                name: '图书阅读量',
+                                type: 'pie',
+                                roseType: 'angle',
+                                radius: '55%',
+                                data: {(booksRead_times | safe)}
+                            }]
+                        });
+                        break;
+                    case 3:
+                        // 图书 - 阅读量南丁格尔
+                        echarts.init(document.getElementById('painter')).setOption({
+                            title: {
+                                text: '图书借阅量统计',
+                                left: 'center',
+                                top: 20,
+                                textStyle: {
+                                    color: '#ccc'
+                                }
+                            },
+                            xAxis: {
+                                type: 'category',
+                                boundaryGap: false,
+                                data: ['1', '2','3'],
+                            },
+                            yAxis: {
+                                type: 'value'
+                            },
+                            series: [{
+                                data: {(borrowsBorrow_time2 | safe)},
+                                type: 'line',
+                                areaStyle: {}
+                            }]
+                        });
+                        break;
+                }
+                document.getElementById("painter").style.display = 'block';
+            },
+        }
+    });
+
+
+
+
+</script>
+
+{% endblock %}

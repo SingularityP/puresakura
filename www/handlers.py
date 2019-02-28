@@ -361,6 +361,7 @@ async def delBlogData(request, *, id):
     return dict(id=id) # 返回被删除的日志id
 
 # 4 工具相关逻辑
+    
 ## 4.1 基本方法
 ### 4.1.1 页面获取
 @get('/tool') # 工具页面获取
@@ -369,8 +370,6 @@ async def tool():
     return {
             'images': configs.images
             }
-    
-### 4.1.2 API 请求
     
     
     
@@ -393,7 +392,13 @@ async def tool_libaray_index2():
 @get('/tool/library/report') # 报告页 tool_library.report.html
 async def tool_libaray_report():
     logging.debug('[HANDLER] Handlering tool_library_report.html ...')
+    book_count = await Books.count(item_count=['bid'])
+    reader_count= await Readers.count(item_count=['rid'])
+    borrow_count = await Borrows.count(item_count=['id'])
     return {
+            'book_count': book_count[0]['COUNT(`bid`)'],
+            'reader_count': reader_count[0]['COUNT(`rid`)'],
+            'borrow_count': borrow_count[0]['COUNT(`id`)'],
             '__template__': 'tool_library_report.html'
             }
 
@@ -463,7 +468,7 @@ async def getToolReaderEdit(rid):
     
     # 借书表页面
     
-@get('/tool/library/borrows') # 用户页 tool_library_borrows.html
+@get('/tool/library/borrows') # 借书表页 tool_library_borrows.html
 async def tool_library_Borrowrs():
     logging.debug('[HANDLER] Handlering tool_library_borrowrs.html ...')
     return {
@@ -471,7 +476,7 @@ async def tool_library_Borrowrs():
             
             }
 
-@get('/manage/tool/borrow/new') # 获取用户创建页 manage_tool_borrow_new.html
+@get('/manage/tool/borrow/new') # 获取借书表创建页 manage_tool_borrow_new.html
 async def getToolBorrowNew():
     logging.debug('[HANDLER] Handlering (new) manage_tool_borrow_edit.html ...')
     return {
@@ -481,7 +486,7 @@ async def getToolBorrowNew():
             'isNew': True
             }
 
-@get('/manage/tool/borrow/edit/{rid}') # 获取用户编辑页 manage_tool_borrow_edit.html
+@get('/manage/tool/borrow/edit/{id}') # 获取借书表编辑页 manage_tool_borrow_edit.html
 async def getToolBorrowEdit(id):
     logging.debug('[HANDLER] Handlering (edit) manage_tool_borrow_edit.html ...')
     borrow = await Borrows.find(id)
@@ -493,15 +498,37 @@ async def getToolBorrowEdit(id):
             'isNew': False
             }
 
+    # 数据分析页面
+    
+@get('/tool/library/data_analysis')
+async def getToolLibraryData():
+    logging.debug('[HANDLER] Handlering tool_library_data_analysis.html ...')
+    booksSort = await Books.count(items=[('bsort', 'name')], item_count=[('bid', 'value')], alias=True, groupBy='bsort')
+    booksBread_times = await Books.count(items=[('btitle', 'name'), ('bread_times', 'value')], alias=True)
+    borrow_time = await Borrows.count(items=[('bborrow_time', 'name')], item_count=[('id', 'value')], alias=True, groupBy='bborrow_time')
+    borrow_time = sorted(borrow_time, key=lambda x: x['name'])
+    return {
+            'booksSort': booksSort,
+            'booksRead_times': booksBread_times,
+            'borrowsBorrow_time': borrow_time,
+            'borrowsBorrow_time1': [x['name'] for x in borrow_time ],
+            'borrowsBorrow_time2': [x['value'] for x in borrow_time ],
+            '__template__': 'tool_library_data_analysis.html'
+            }
+
 ### 4.2.2 API 请求
     
     # 图书 API
     
 @get('/api/tool/books/{bsort}') # 获取图书列表
-async def getBooks(*, bsort='0', page='1'):
+async def getBooks(*, key='', value='', orderby='', bsort='0', page='1'):
     logging.debug('[HANDLER] Handlering /api/tool/books/{bsort} in tool_library_books.html ...')
     where_sql = None
-    limit_sql = 10
+    if key != '' and value != '':
+        where_sql = key + "='" + value + "'"
+    if orderby == '' or orderby == ' ':
+        orderby='bpublished_at desc'
+    limit_sql = 8
     items_sql = ['btitle', 'bauthor', 'bpublisher', 'bpublished_at', 'bsort', 'bexits', 'bread_times']
     if bsort != '0': # 全选时
         where_sql="bsort=" + bsort # 构造类别条件
@@ -515,7 +542,7 @@ async def getBooks(*, bsort='0', page='1'):
             logging.warning('[HANDLER]     No data! Database is empty!')
             return dict(page=page, books=())
         limit_sql=(page.offset, page.limit)
-    infos = await Books.findAll(where=where_sql, limit=limit_sql, orderBy='bpublished_at desc', items=items_sql)
+    infos = await Books.findAll(where=where_sql, limit=limit_sql, orderBy=orderby, items=items_sql)
     return {
             'infos': infos, # 图书数据，不带有模板，在 app.py 内的 ResponseFactory 内会自动转换为 json
             'page': page
@@ -568,10 +595,14 @@ async def delBookData(request, *, bid):
     # 用户 API
 
 @get('/api/tool/readers/{rsort}') # 获取用户列表
-async def getReader(*, rsort='0', page='1'):
+async def getReader(*, key='', value='', orderby='', rsort='0', page='1'):
     logging.debug('[HANDLER] Handlering /api/tool/readers/{rsort} in tool_library_readers.html ...')
     where_sql = None
-    limit_sql = 10
+    if key != '' and value != '':
+        where_sql = key + "='" + value + "'"
+    if orderby == '' or orderby == ' ':
+        orderby='radmin desc'
+    limit_sql = 8
     items_sql = ['rname', 'rsex', 'remail', 'rrole', 'radmin']
     if rsort != '0': # 全选时
         where_sql="rsort=" + rsort # 构造类别条件
@@ -585,7 +616,7 @@ async def getReader(*, rsort='0', page='1'):
             logging.warning('[HANDLER]     No data! Database is empty!')
             return dict(page=page, readers=())
         limit_sql=(page.offset, page.limit)
-    infos = await Readers.findAll(where=where_sql, limit=limit_sql, orderBy='radmin desc', items=items_sql)
+    infos = await Readers.findAll(where=where_sql, limit=limit_sql, orderBy=orderby, items=items_sql)
     return {
             'infos': infos, # 用户数据，不带有模板，在 app.py 内的 ResponseFactory 内会自动转换为 json
             'page': page
@@ -632,6 +663,85 @@ async def delReaderData(request, *, rid):
     reader = await Readers.find(rid) # 查找用户数据
     await reader.delete() # 删除该用户
     return dict(rid=rid) # 返回被删除的用户rid
+
+    # 借书表 API
+    
+@get('/api/tool/borrows/{sort}') # 获取借书表列表
+async def getBorrow(*, key='', value='', orderby='', sort='0', page='1'):
+    logging.debug('[HANDLER] Handlering /api/tool/borrows/{sort} in tool_library_borrows.html ...')
+    where_sql = None
+    if key != '' and value != '':
+        where_sql = key + "='" + value + "'"
+    if orderby == '' or orderby == ' ':
+        orderby='bborrow_time desc'
+    limit_sql = 8
+    #items_sql = ['rid', 'bid', 'bborrow_time', 'bdue_time', 'breturn_time', 'bcomment']
+    items_sql = None
+    if sort != '0': # 全选时
+        where_sql="sort=" + sort # 构造类别条件
+        page = None # 不用页码对象
+    else: # 按类别选取时，构造页码对象，并设置 limit 和 items
+        page_index = get_page_index(page)
+        logging.debug('[HANDLER]     Handlering /api/tool/borrows/{sort}, the page_index is: ' + str(page_index))
+        num = await Borrows.findNumber('count(id)') # 获取条目总数
+        page = Page(num, page_index, 10)
+        if num == 0: # 处理无条目的情况
+            logging.warning('[HANDLER]     No data! Database is empty!')
+            return dict(page=page, borrows=())
+        limit_sql=(page.offset, page.limit)
+    infos = await Borrows.findAllFromView(where=where_sql, view='library_view1', limit=limit_sql, orderBy=orderby, items=items_sql)
+    return {
+            'infos': infos, # 借书表数据，不带有模板，在 app.py 内的 ResponseFactory 内会自动转换为 json
+            'page': page
+            }
+
+@post('/api/tool/borrow/new') # 新增借书记录
+async def createBorrowData(request, *, rid, bid, bborrow_time, bdue_time, breturn_time, bcomment):
+    logging.debug('[HANDLERS] Handlering /aip/tool/borrow/new in manage_tool_borrow_edit.html ...')
+    check_admin(request) # 检查是否是管理员
+    if not rid or not rid.strip(): # 如果没有名字
+        raise APIValueError('name', 'name cannot be empty.')
+    if not bid or not bid.strip(): # 如果没有性别
+        raise APIValueError('summary', 'summary cannot be empty.')
+    if not bborrow_time or not bborrow_time.strip(): # 如果没有邮箱
+        raise APIValueError('content', 'content cannot be empty.')
+    # 创建图书
+    borrow = Borrows(id = next_id(), rid=rid.strip(), bid=bid.strip(), bborrow_time=bborrow_time, bdue_time=bdue_time, breturn_time=breturn_time, bcomment=bcomment.strip())
+    await borrow.save()
+    return borrow
+
+@post('/api/tool/borrow/edit/{id}') # 修改借书数据
+async def editBorrowData(id, request, *, rid, bid, bborrow_time, bdue_time, breturn_time, bcomment):
+    logging.debug('[HANDLERS] Handlering /aip/tool/borrow/edit/{id} in manage_tool_borrow_edit.html ...')
+    check_admin(request) # 检查是否是管理员
+    borrow = await Borrows.find(id) # 查找要修改的用户数据
+    if not rid or not rid.strip(): # 如果没有名字
+        raise APIValueError('name', 'name cannot be empty.')
+    if not bid or not bid.strip(): # 如果没有性别
+        raise APIValueError('summary', 'summary cannot be empty.')
+    if not bborrow_time or not bborrow_time.strip(): # 如果没有邮箱
+        raise APIValueError('content', 'content cannot be empty.')
+    borrow.rid=rid.strip()
+    borrow.bid=bid.strip()
+    borrow.bborrow_time=bborrow_time
+    borrow.bdue_time=bdue_time
+    borrow.breturn_time, =  breturn_time,
+    borrow.bcomment = bcomment
+    await borrow.update() # 更新数据库
+    return borrow
+
+@get('/api/tool/borrow/del/{id}') # 删除借书数据
+async def delBorrowData(request, *, id):
+    logging.debug('[HANDLERS] Handlering /api/tool/borrow/del/{id} in tool_library_borrows.html ...')
+    check_admin(request) # 检查是否是管理员
+    borrow = await Borrows.find(id) # 查找借书数据
+    await borrow.delete() # 删除该借书记录
+    return dict(id=id) # 返回被删除的借书id
+
+
+    # 数据分析 API
+    
+
 
 # 5 后台管理相关
 ## 5.1 页面请求

@@ -3,6 +3,7 @@
 
 __author__ = 'Infuny'
 
+from apis import APIValueError, APIError, APIPermissionError, APIResourceNotFoundError
 import asyncio, logging, aiomysql
 logging.basicConfig(level=logging.DEBUG) # 设置调试等级
 
@@ -62,6 +63,7 @@ def execute(sql, args): # INSERT, UPDATE, DELETE语句封装
             logging.info('[ORM]     rows affected: %s' % affected) # 记录日志
         except BaseException as e: # 处理异常
             logging.error("[ORM] " + str(e))
+            raise APIValueError(sql, str(e))
         return affected # 返回结果数
 
 # orm顶层设计 - 辅助函数
@@ -219,6 +221,39 @@ class Model(dict, metaclass=ModelMetaclass):
                 raise ValueError('Invaild limit value: %s' % str(limit))
         rs = yield from select(' '.join(sql), args)
         return [cls(**r) for r in rs] # 建立并返回当前类实例
+
+    @classmethod # 类方法装饰器
+    @asyncio.coroutine
+    def findAllFromView(cls, where, view, args=None, **kw):
+        'find objects by where clause in views/tables'
+        sql = None
+        items = kw.get('items', None)
+        if items is None:
+            sql = ['SELECT * FROM `%s`' % view] # 获取基本的select语句
+        else:
+            sql = ['SELECT `%s`, %s FROM `%s`' % (cls.__primary_key__, ','.join(list(map(lambda f: '`%s`' % f, items))), view)]
+        if where: # 处理where条件
+            sql.append('WHERE') # 语句
+            sql.append(where) # 条件
+        if args is None: # 处理空参数的情况
+            args=[] # 使用空列表
+        orderBy = kw.get('orderBy', None) # 获取排序参数
+        if orderBy: # 如果要求排序
+            sql.append('ORDER BY') # # 语句
+            sql.append(orderBy) # 条件
+        limit = kw.get('limit', None) # 获取限制参数
+        if limit is not None: # 如果有限制
+            sql.append('LIMIT')
+            if isinstance(limit, int): # 处理限制参数的整数输入
+                sql.append('?') # 语句
+                args.append(limit) # 条件
+            elif isinstance(limit, tuple) and len(limit) == 2: # 处理限制参数的二元组输入
+                sql.append('?, ?')
+                args.extend(limit)
+            else:
+                raise ValueError('Invaild limit value: %s' % str(limit))
+        rs = yield from select(' '.join(sql), args)
+        return [cls(**r) for r in rs] # 建立并返回当前类实例
                 
     @classmethod
     @asyncio.coroutine
@@ -235,12 +270,28 @@ class Model(dict, metaclass=ModelMetaclass):
 
     @classmethod
     @asyncio.coroutine
-    def count(cls, item_count=[], item_sum=[], args=None): # 统计指定属性
-        sql = ['SELECT `%s`, %s FROM `%s`' % (cls.__primary_key__, ','.join(list(map(lambda f: 'COUNT(`%s`)' % f, item_count)) + list(map(lambda g: 'SUM(`%s`)' % g, item_sum))) ,cls.__table__)]
+    def count(cls, items=None, item_count=[], item_sum=[], alias=False, groupBy=None, args=None): # 统计指定属性
+        sql = ""
+        if items is None:
+            if groupBy is None:
+                sql = ['SELECT %s FROM `%s`' % (','.join(list(map(lambda f: 'COUNT(`%s`)' % f, item_count)) + list(map(lambda g: 'SUM(`%s`)' % g, item_sum))) ,cls.__table__)]
+            else:
+                sql = ['SELECT %s FROM `%s` GROUP BY `%s`' % (','.join(list(map(lambda f: 'COUNT(`%s`)' % f, item_count)) + list(map(lambda g: 'SUM(`%s`)' % g, item_sum))) ,cls.__table__, groupBy)]
+        else:
+            if groupBy is None:
+                if alias is False:
+                    sql = ['SELECT %s, %s FROM `%s`' % (','.join(list(map(lambda f: '`%s`' % f, items))), ','.join(list(map(lambda f: 'COUNT(`%s`)' % f, item_count)) + list(map(lambda g: 'SUM(`%s`)' % g, item_sum))) ,cls.__table__)]
+                else:
+                    sql = ['SELECT %s FROM `%s`' % (','.join(list(map(lambda f: '`%s` %s' % f, items))) ,cls.__table__)]
+            else:
+                if alias is False:
+                    sql = ['SELECT %s, %s FROM `%s` GROUP BY `%s`' % (','.join(list(map(lambda f: '`%s`' % f, items))), ','.join(list(map(lambda f: 'COUNT(`%s`)' % f, item_count)) + list(map(lambda g: 'SUM(`%s`)' % g, item_sum))) ,cls.__table__, groupBy)]
+                else:
+                    sql = ['SELECT %s, %s FROM `%s` GROUP BY `%s`' % (','.join(list(map(lambda f: '`%s` %s' % f, items))), ','.join(list(map(lambda f: 'COUNT(`%s`) %s' % f, item_count)) + list(map(lambda g: 'SUM(`%s`) %s' % g, item_sum))) ,cls.__table__, groupBy)]
         if args is None:
             args = []
         rs = yield from select(' '.join(sql), args)
-        return rs[0]
+        return rs
 
     @asyncio.coroutine
     def save(self): # 保存实例到数据库

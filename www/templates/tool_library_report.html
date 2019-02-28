@@ -100,15 +100,15 @@
     <div id="info_all" class="grid grid-1-4">
         <div>
             <h4>图书总数</h4>
-            <span>0 本</span>
+            <span><a href="/tool/library/books">{(book_count)} 本</a></span>
         </div>
         <div>
-            <h4>借阅数</h4>
-            <span>0 本</span>
+            <h4>借阅总数</h4>
+            <span><a href="/tool/library/readers">{(borrow_count)} 本</a></span>
         </div>
         <div>
             <h4>借阅人次</h4>
-            <span>0 人</span>
+            <span><a href="/tool/library/borrows">{(reader_count)} 人</a></span>
         </div>
         <div>
             <h4>待上架处理</h4>
@@ -121,57 +121,59 @@
     <h3 class="page_header">状态</h3>
     <hr class="divider" />
 
-    <div id="info_status">
-        <div>登陆者： {{  }}，这是您第 {{  }} 次登录</div>
-        <div>上次登录时间：{{  }}，上次登录 IP：{{  }}</div>
-    </div>
+    <div id="info">
+        <div id="info_status">
+            <div>登陆者： {( __user__.name )} &nbsp; 身份： <span style="color:red;">{{ {( __user__.admin )} ? '管理员' : '普通用户' }}</span></div>
+            <div>邮箱： {(__user__.email)} &nbsp; 注册时间： {{ {(__user__.created_at)} | datetime_filter }}</div>
+        </div>
 
-    <!-- Info system -->
+        <!-- Info system -->
 
-    <h3 class="page_header">系统信息</h3>
-    <hr class="divider" />
+        <h3 class="page_header">系统信息</h3>
+        <hr class="divider" />
 
-    <div id="info_system">
-        <table class="table-responsive">
-            <tbody>
-                <tr>
-                    <td>管理员个数:</td>
-                    <td>2 人</td>
-                    <td>服务器软件:</td>
-                    <td>Apache/2.4.10 (Win32) OpenSSL/1.0.1i mod_fcgid/2.3.9</td>
-                </tr>
-                <tr>
-                    <td>浏览器:</td>
-                    <td>Chrome47</td>
-                    <td>PHP版本:</td>
-                    <td>5.6.1</td>
-                </tr>
-                <tr>
-                    <td>操作系统:</td>
-                    <td>Windows 10</td>
-                    <td>PHP运行方式:</td>
-                    <td>CGI-FCGI</td>
-                </tr>
-                <tr>
-                    <td>登录者IP:</td>
-                    <td>::1:55570</td>
-                    <td>MYSQL版本:</td>
-                    <td>5.5.40</td>
-                </tr>
-                <tr>
-                    <td>程序版本:</td>
-                    <td class="version">YlsatCMS 1.0 <font size="-6" color="#BBB">(20160108160215)</font></td>
-                    <td>上传文件:</td>
-                    <td>可以 <font size="-6" color="#BBB">(最大文件：2M ，表单：8M )</font></td>
-                </tr>
-                <tr>
-                    <td>程序编码:</td>
-                    <td>UTF-8</td>
-                    <td>当前时间:</td>
-                    <td>2016-01-08 15:50:30</td>
-                </tr>
-            </tbody>
-        </table>
+        <div id="info_system">
+            <table class="table-responsive">
+                <tbody>
+                    <tr>
+                        <td>管理员个数:</td>
+                        <td>2 人</td>
+                        <td>服务器软件:</td>
+                        <td>Nginx/1.12.2 Supervisord/3.3.4</td>
+                    </tr>
+                    <tr>
+                        <td>浏览器:</td>
+                        <td>{{userAgent}}</td>
+                        <td>操作系统:</td>
+                        <td>{{navigator.platform}}</td>
+                    </tr>
+                    <tr>
+                        <td>服务器系统:</td>
+                        <td>CentOS Linux</td>
+                        <td>内核版本</td>
+                        <td>7.3.1611</td>
+                    </tr>
+                    <tr>
+                        <td>登录者IP:</td>
+                        <td>隐藏</td>
+                        <td>MYSQL版本:</td>
+                        <td>8.0.15</td>
+                    </tr>
+                    <tr>
+                        <td>程序名称:</td>
+                        <td class="version">{{navigator.appName}}</td>
+                        <td>上传文件:</td>
+                        <td>否</td>
+                    </tr>
+                    <tr>
+                        <td>程序编码:</td>
+                        <td>UTF-8</td>
+                        <td>当前时间:</td>
+                        <td>{{timeNow}}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <!-- Info diary -->
@@ -198,7 +200,41 @@
 
 <script>
 
+
+    Vue.filter('datetime_filter', function (value) {
+        dt = new Date(value * 1000);
+        return dt.getFullYear() + '-' + (dt.getMonth() + 1) + '-' + dt.getDate();
+    });
+
     document.getElementById("li_report").style.backgroundColor = 'rgba(255, 255, 255, 0.175)';
+
+    var status = new Vue({
+        el: '#info',
+        computed: {
+            userAgent: function () {
+                var Sys = {};
+                var ua = navigator.userAgent.toLowerCase();
+                var s;
+                (s = ua.match(/msie ([\d.]+)/)) ? Sys.ie = s[1] :
+                    (s = ua.match(/firefox\/([\d.]+)/)) ? Sys.firefox = s[1] :
+                        (s = ua.match(/chrome\/([\d.]+)/)) ? Sys.chrome = s[1] :
+                            (s = ua.match(/opera.([\d.]+)/)) ? Sys.opera = s[1] :
+                                (s = ua.match(/version\/([\d.]+).*safari/)) ? Sys.safari = s[1] : 0;
+                var agent;
+                //以下进行测试
+                if (Sys.ie) agent = 'IE: ' + Sys.ie;
+                if (Sys.firefox) agent = 'Firefox: ' + Sys.firefox;
+                if (Sys.chrome) agent = 'Chrome: ' + Sys.chrome;
+                if (Sys.opera) agent = 'Opera: ' + Sys.opera;
+                if (Sys.safari) agent = 'Safari: ' + Sys.safari;
+                return agent;
+            },
+            timeNow: function () {
+                let dt = new Date();
+                return dt.getFullYear() + "-" + (dt.getMonth() + 1) + "-" + dt.getDate() + " " + dt.getHours() + ":" + dt.getMinutes() + ":" + dt.getSeconds();
+            }
+        }
+    })
 
 </script>
 

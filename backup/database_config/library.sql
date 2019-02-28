@@ -1,9 +1,6 @@
 USE puresakura;
-DROP TABLE `puresakura`.`borrows`;
-DROP TABLE `puresakura`.`readers`;
-DROP TABLE `puresakura`.`books`;
 
-CREATE TABLE `puresakura`.`readers` (
+CREATE TABLE `readers` (
   `rid` VARCHAR(50) NOT NULL,
   `rname` VARCHAR(50) NOT NULL,
   `rsex` TINYINT NOT NULL,
@@ -14,7 +11,7 @@ CREATE TABLE `puresakura`.`readers` (
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8;
 
-CREATE TABLE `puresakura`.`books` (
+CREATE TABLE `books` (
   `bid` VARCHAR(50) NOT NULL,
   `btitle` VARCHAR(50) NOT NULL,
   `bauthor` VARCHAR(50) NOT NULL,
@@ -27,26 +24,32 @@ CREATE TABLE `puresakura`.`books` (
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8;
 
-CREATE TABLE `puresakura`.`borrows` (
+CREATE TABLE `borrows` (
   `id` VARCHAR(50) NOT NULL,
   `rid` VARCHAR(50) NOT NULL,
   `bid` VARCHAR(50) NOT NULL,
   `bborrow_time` REAL NULL DEFAULT '0',
   `bdue_time` REAL NULL DEFAULT '0',
+  `breturn_time` REAL NULL DEFAULT '0',
+  `bcomment` VARCHAR(100) NOT NULL,
   PRIMARY KEY (`id`),
-  INDEX `rid_idx` (`rid` ASC) VISIBLE,
   CONSTRAINT `rid`
     FOREIGN KEY (`rid`)
-    REFERENCES `puresakura`.`readers` (`rid`)
+    REFERENCES `readers` (`rid`)
     ON DELETE CASCADE
     ON UPDATE CASCADE,
   CONSTRAINT `bid`
     FOREIGN KEY (`bid`)
-    REFERENCES `puresakura`.`books` (`bid`)
+    REFERENCES `books` (`bid`)
     ON DELETE CASCADE
     ON UPDATE CASCADE)
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8;
+
+CREATE VIEW `new_view` AS
+SELECT `id`, `borrows`.`rid`, `rname`, `borrows`.`bid`, `btitle`, `bborrow_time`, `bdue_time`, `breturn_time`, `bcomment`
+FROM `borrows`, `books`, `readers`
+WHERE `borrows`.`rid` = `readers`.`rid` AND `borrows`.`bid` = `books`.`bid`;
 
 INSERT INTO books(bid, btitle, bauthor, bpublisher, bpublished_at, bsort, bread_times, bexits) VALUES ('001', '三体I', '刘慈欣', '重庆出版社', 1199145549, '文学', 824, true);
 INSERT INTO books(bid, btitle, bauthor, bpublisher, bpublished_at, bsort, bread_times, bexits) VALUES ('002', '三体II', '刘慈欣', '重庆出版社', 1464739149, '文学', 712, true);
@@ -66,3 +69,14 @@ INSERT INTO books(bid, btitle, bauthor, bpublisher, bpublished_at, bsort, bread_
 INSERT INTO books(bid, btitle, bauthor, bpublisher, bpublished_at, bsort, bread_times, bexits) VALUES ('016', '漫长的告别', '[美]雷蒙德·钱德勒', '中信出版集团股份有限公司', 1143820800, '传记',387, true);
 INSERT INTO books(bid, btitle, bauthor, bpublisher, bpublished_at, bsort, bread_times, bexits) VALUES ('017', '人类简史', '[以]尤瓦尔·赫拉利', '中信出版集团', 1541001600, '学术文化',364, true);
 INSERT INTO books(bid, btitle, bauthor, bpublisher, bpublished_at, bsort, bread_times, bexits) VALUES ('018', '小屁孩树屋历险记', '[澳]安迪·格里菲思', '长江少年儿童出版社', 1430409600, '少儿文学',302, true);
+INSERT INTO readers(rid, rname, rsex, remail, rrole, radmin) VALUES ('001', 'Infuny', 1, 'Infuny@ciyuan.com', '其他市民', 1);
+INSERT INTO readers(rid, rname, rsex, remail, rrole, radmin) VALUES ('002', 'Christina', 0, 'Christina@ciyuan.com', '其他市民', 0);
+INSERT INTO readers(rid, rname, rsex, remail, rrole, radmin) VALUES ('003', 'Ben', 1, 'Ben@sina.com', '学生', 0);
+INSERT INTO readers(rid, rname, rsex, remail, rrole, radmin) VALUES ('004', 'Jane', 0, 'Jane@gmail.com', '学生', 0);
+INSERT INTO readers(rid, rname, rsex, remail, rrole, radmin) VALUES ('005', 'Candy', 0, 'Candy@163.com', '老师', 1);
+INSERT INTO borrows(id, rid, bid, bborrow_time, bdue_time, breturn_time, bcomment) VALUES ('001', '001', '002', 1530409600 , 1532459600, 1531449600, '没有评论');
+INSERT INTO borrows(id, rid, bid, bborrow_time, bdue_time, breturn_time, bcomment) VALUES ('002', '002', '005', 1530409600 , 1533469600, 1532459600, '没有评论');
+INSERT INTO borrows(id, rid, bid, bborrow_time, bdue_time, breturn_time, bcomment) VALUES ('003', '002', '012', 1530409600 , 1534439600, 1533429600, '没有评论');
+INSERT INTO borrows(id, rid, bid, bborrow_time, bdue_time, breturn_time, bcomment) VALUES ('004', '004', '007', 1530409600 , 1534489600, 1532429600, '没有评论');
+INSERT INTO borrows(id, rid, bid, bborrow_time, bdue_time, breturn_time, bcomment) VALUES ('005', '005', '008', 1530409600 , 1535489600, 1531449600, '没有评论');
+INSERT INTO borrows(id, rid, bid, bborrow_time, bdue_time, breturn_time, bcomment) VALUES ('006', '003', '018', 1530409600 , 1535449600, 1532419600, '没有评论');
