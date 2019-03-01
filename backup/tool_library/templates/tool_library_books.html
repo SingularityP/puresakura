@@ -1,0 +1,357 @@
+﻿{% extends 'tool_library.html' %}
+
+{% block title %}{( super() )}{% endblock %}
+
+{% block beforehead %}
+
+{( super() )}
+
+<style>
+
+    /* 1 */
+
+    #controller {
+        position: relative;
+        margin: 2rem 1rem 4rem 10rem;
+    }
+
+    /* 1.1 操作 */
+
+
+
+
+
+    /* 1.2 管理 */
+
+    .table-responsive {
+        font-size: 0.7rem;
+    }
+
+        .table-responsive a {
+            border-bottom: none;
+        }
+
+    /* 1.3 页脚 */
+
+    .message_footer {
+        position: relative;
+        padding: 1rem;
+    }
+
+    .message_footer ul{
+        position: absolute;
+        left: 50%;
+    }
+
+    .message_footer li {
+        list-style-type: none;
+        font-size: 0.7rem;
+        float: left;
+        position: relative;
+        right: 50%;
+    }
+
+        .message_footer a {
+            background: -moz-linear-gradient(top, rgba(67, 67, 69, 0.6), rgba(47, 48, 50, 0.6));
+            background: -webkit-linear-gradient(top, rgba(67, 67, 69, 0.6), rgba(47, 48, 50, 0.6));
+            background: -o-linear-gradient(top, rgba(67, 67, 69, 0.6), rgba(47, 48, 50, 0.6));
+            background: linear-gradient(top, rgba(67, 67, 69, 0.6), rgba(47, 48, 50, 0.6));
+            display: block;
+            color: #f2f2f2;
+            text-shadow: 1px 0 0 #101011;
+            padding: 0 10px;
+            border-radius: 2px;
+            box-shadow: 0 1px 0 #5a5b5c inset,0 1px 0 #080808;
+            border-bottom: none;
+        }
+
+            .message_footer a:hover {
+                background: -moz-linear-gradient(top, rgba(255, 254, 252, 0.5),rgba(193, 193, 193, 0.5));
+                background: -webkit-linear-gradient(top, rgba(255, 254, 252, 0.5),rgba(193, 193, 193, 0.5));
+                background: -o-linear-gradient(top, rgba(255, 254, 252, 0.5),rgba(193, 193, 193, 0.5));
+                background: linear-gradient(top, rgba(255, 254, 252, 0.5),rgba(193, 193, 193, 0.5));
+                text-decoration: none;
+                box-shadow: 0 1px 0 #5a5b5c inset,0 1px 0 #0a0a0a;
+            }
+
+    /* 全局 */
+
+        #footer {
+            display: none;
+        }
+
+        .unused {
+            opacity: 0.25;
+        }
+
+            .unused a:hover {
+                background: -moz-linear-gradient(top, rgba(67, 67, 69, 0.6), rgba(47, 48, 50, 0.6));
+                background: -webkit-linear-gradient(top, rgba(67, 67, 69, 0.6), rgba(47, 48, 50, 0.6));
+                background: -o-linear-gradient(top, rgba(67, 67, 69, 0.6), rgba(47, 48, 50, 0.6));
+                background: linear-gradient(top, rgba(67, 67, 69, 0.6), rgba(47, 48, 50, 0.6));
+            }
+
+        .used a {
+            background: -moz-linear-gradient(top, rgba(67, 67, 69, 0.95), rgba(47, 48, 50, 0.95));
+            background: -webkit-linear-gradient(top, rgba(67, 67, 69, 0.95), rgba(47, 48, 50, 0.95));
+            background: -o-linear-gradient(top, rgba(67, 67, 69, 0.95), rgba(47, 48, 50, 0.95));
+            background: linear-gradient(top, rgba(67, 67, 69, 0.95), rgba(47, 48, 50, 0.95));
+        }
+
+            .used a:hover {
+                background: -moz-linear-gradient(top, rgba(67, 67, 69, 0.95), rgba(47, 48, 50, 0.95));
+                background: -webkit-linear-gradient(top, rgba(67, 67, 69, 0.95), rgba(47, 48, 50, 0.95));
+                background: -o-linear-gradient(top, rgba(67, 67, 69, 0.95), rgba(47, 48, 50, 0.95));
+                background: linear-gradient(top, rgba(67, 67, 69, 0.95), rgba(47, 48, 50, 0.95));
+            }
+
+    /* key and value */
+    .key_value div {
+        width: 30%;
+        float: left;
+        margin: 0 0 3rem 1rem;
+    }
+
+    #control {
+        margin: 0 2.5rem 0 0;
+    }
+
+        #control input {
+            position: relative;
+            top: 2.2rem;
+            margin: 0 0 0 1rem;
+            float: right;
+        }
+
+        #control span {
+            position: relative;
+            top: 2.2rem;
+            margin: 1.3rem 0 0 1rem;
+            float: right;
+        }
+
+</style>
+
+{% endblock %}
+
+{% block section %}
+
+<div id="controller">
+    <h3 class="page_header">操作</h3>
+
+    <hr class="divider" />
+
+    <ol class="breadcumb">
+        <li><a href="/manage/tool/book/new">增加图书</a></li>
+    </ol>
+
+    <div style="clear:both;"></div>
+
+    <h3 class="page_header">管理</h3>
+
+    <hr class="divider" />
+
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>书名</th>
+                    <th>作者</th>
+                    <th>出版社</th>
+                    <th>出版日期</th>
+                    <th>分类</th>
+                    <th>借阅量</th>
+                    <th>在馆</th>
+                    <th>借阅用户</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="info in infos">
+                    <td><a :href="'/tool/library'+info.bid">{{ info.btitle }}</a></td>
+                    <td>{{ info.bauthor }}</td>
+                    <td>{{ info.bpublisher }}</td>
+                    <td>{{ info.bpublished_at | datetime_filter }}</td>
+                    <td>{{ info.bsort }}</td>
+                    <td>{{ info.bread_times }}</td>
+                    <td>{{ info.bexits ? '是' : '否' }}</td>
+                    <td>{{ info.breader ? info.breader : '无' }}</td>
+                    <td><a href="#" @click="edit_book(info.bid)">修改</a> <a href="#" @click="delete_book(info.bid, info.btitle)">删除</a></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="message_footer">
+        <pagination :page_index="page.page_index"
+                    :has_previous="page.has_previous"
+                    :has_next="page.has_next"
+                    :page_count="page.page_count"
+                    :range="range"
+                    @changeinfos="goto_Page($event)">
+        </pagination>
+    </div>
+
+    <h3 class="page_header">筛选</h3>
+
+    <hr class="divider" />
+
+    <div class="key_value">
+        <div id="key" class="field standar">
+            <label for="key">属性</label>
+            <select v-model="key">
+                <option value=""></option>
+                <option value="bauthor">作者</option>
+                <option value="bpublisher">出版社</option>
+                <option value="bpublished_at">出版日期</option>
+                <option value="bsort">分类</option>
+                <option value="bread_times">借阅量</option>
+                <option value="bexits">在馆</option>
+                <option value="breader">借阅用户 id</option>
+            </select>
+        </div>
+
+        <div class="field standar">
+            <label for="value">值</label>
+            <input v-model="value" type="text" placeholder="value" />
+        </div>
+
+        <div id="control" class="field standar">
+            <input type="reset" @click.prevent="reset" value="重置" />
+            <input type="reset" @click.prevent="list" value="查询" />
+            <span>{{ infomation }}</span>
+        </div>
+    </div>
+
+    <div style="clear:both;"></div>
+
+    <h3 class="page_header">排序</h3>
+
+    <hr class="divider" />
+
+    <div class="key_value">
+        <div id="order" class="field standar">
+            <label for="order">属性</label>
+            <select v-model="order">
+                <option value=""></option>
+                <option value="bauthor">作者</option>
+                <option value="bpublisher">出版社</option>
+                <option value="bpublished_at">出版日期</option>
+                <option value="bsort">分类</option>
+                <option value="bread_times">借阅量</option>
+                <option value="bexits">在馆</option>
+                <option value="breader">借阅用户 id</option>
+            </select>
+        </div>
+
+        <div class="field standar">
+            <label for="direction">顺序</label>
+            <select v-model="direction">
+                <option value=""></option>
+                <option value="ASC">升序</option>
+                <option value="DESC">降序</option>
+            </select>
+        </div>
+
+        <div id="control" class="field standar">
+            <input type="reset" @click.prevent="reset" value="重置" />
+            <input type="reset" @click.prevent="list" value="查询" />
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block afterhead %}
+
+{( super() )}
+
+<script>
+
+    Vue.filter('datetime_filter', function (value) {
+        dt = new Date(value*1000);
+        return dt.getFullYear() + '-' + (dt.getMonth() + 1) + '-' + dt.getDate();
+    });
+
+    Vue.component('pagination', {
+        props: ['page_index', 'has_previous', 'has_next', 'page_count', 'range'],
+        template: '<ul class="uk-pagination">' +
+                        '<li v-if="! has_previous" class="unused"><a><i class="icon fa-angle-double-left"></i></a></li>' +
+                        '<li v-if="has_previous"><a v-on:click=\'$emit("changeinfos", page_index-1)\' href="#0"><i class="icon fa-angle-double-left"></i></a></li>' +
+                        '<template v-for="item in range">' +
+                            '<li v-if="item!==page_index"><a v-on:click=\'$emit("changeinfos", item)\' href="#0">{{ item }}</a></li>' +
+                            '<li v-else class="used"><a>{{ page_index }}</a></li>' +
+                        '</template>' +
+                        '<li v-if="! has_next" class="unused"><a><i class="icon fa-angle-double-right"></i></a></li>' +
+                        '<li v-if="has_next"><a v-on:click=\'$emit("changeinfos", page_index+1)\' href="#0"><i class="icon fa-angle-double-right"></i></a></li>' +
+                    '</ul>'
+    });
+
+    var controller = new Vue({
+        el: '#controller',
+        data: {
+            infos: [],
+            page: '',
+            key: '',
+            value: '',
+            order: '',
+            direction: '',
+            infomation: '查询信息'
+        },
+        methods: {
+            edit_book: function (book_id) {
+                location.assign('/manage/tool/book/edit/' + book_id);
+            },
+            delete_book: function (book_id, book_name='') {
+                if (confirm('确认要删除《' + book_name + '》？删除后不可恢复！')) {
+                    axios.get('/api/tool/book/del/' + book_id)
+                        .then(location.reload())
+                        .catch(err => console.log(err));
+                }
+            },
+            goto_Page: function (new_page_index) {
+                console.log('goto_page(' + new_page_index + ')')
+                axios.get('/api/tool/books/0', { params: { page: new_page_index } })
+                    .then(response => {
+                        this.infos = response.data.infos;
+                        this.page = response.data.page;
+                    })
+                    .catch(err => { console.log(err); });
+            },
+            list: function () {
+                if (this.key != '' && this.value == '') {
+                    this.infomation = '输入错误';
+                    return;
+                }
+                axios.get('/api/tool/books/0', { params: { 'key': this.key, 'value': this.value, 'orderby':  this.order + ' ' + this.direction } })
+                    .then(response => {
+                        this.infos = response.data.infos;
+                        this.page = response.data.page;
+                    })
+                    .catch(err => { console.log(err); this.infomation = "查询失败，请检查条件"; });
+            },
+            reset: function () {
+                this.key = ''; this.value = "";
+                this.list();
+            }
+        },
+        mounted: function () {
+            this.list();
+        },
+        computed: {
+            range: function () {
+                arr = [];
+                for (let i = 0; i < this.page.page_count; i++) {
+                    arr.push(i + 1);
+                }
+                return arr;
+            }
+        }
+    });
+
+    document.getElementById("li_article").style.backgroundColor = 'rgba(255, 255, 255, 0.175)';
+
+</script>
+
+{% endblock %}

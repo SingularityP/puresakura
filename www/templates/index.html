@@ -21,7 +21,7 @@
 
         {% if __user__ %}
             {% if __user__.admin %}
-            <a href="/manage/article">管理</a>
+            <a href="/manage/report">管理</a>
             {% endif %}
         <a href="/api/signout">退出</a>
         {% else %}
@@ -107,8 +107,8 @@
                 </section>
                 <div class="tools grid grid-1-4">
                     <div class="grid-1-4">
-                        <a href="/tool/library">
-                            <div class="grid-1-2 imgmask" data-text="图书管理系统">
+                        <a href="#">
+                            <div class="grid-1-2 imgmask" data-text="工具1">
                                 <img :src="'..' + images.tool_path + 'imgS_tool1.jpg'" alt="工具1" />
                             </div>
                         </a>

@@ -1,0 +1,211 @@
+﻿{% extends 'base.html' %}
+
+{% block title %}[编辑] {( borrow_name )}{% endblock %}
+
+{% block beforehead %}
+<style>
+
+    /* Form */
+    form {
+        margin: 0;
+        padding: 0;
+        border: 0;
+        font-size: 100%;
+        font: inherit;
+        vertical-align: baseline;
+    }
+
+    /* Editor */
+    /* Form editor */
+    #form_editor {
+        padding: 8rem 5% 1rem 10%;
+        width: 80%;
+    }
+
+    .standar {
+        width: 30%;
+        float: left;
+        padding: 0 0 0 1.5rem;
+    }
+
+    #bexits, #bread_times {
+        width: 30%;
+        float: left;
+        padding: 0 0 0 1.5rem;
+    }
+
+    #bpublished_at {
+        width: 35%;
+        float: left;
+        padding: 0 0 0 1rem;
+    }
+
+        #bpublished_at input {
+            float: left;
+            width: 5rem;
+            margin: 0 0 0 0.5rem;
+        }
+
+
+    #control {
+        margin: 0 2.5rem 0 0;
+    }
+
+        #control input {
+            position: relative;
+            top: 2.2rem;
+            margin: 0 0.5rem 0 0;
+            float: right;
+        }
+
+        #control span {
+            position: relative;
+            top: 2.2rem;
+            margin: 1.3rem 0 0 1rem;
+            float: right;
+        }
+
+    #footer {
+        display: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div id="editor">
+
+    <!-- Form editor -->
+    <div id="form_editor">
+        <form id="basic_form" @submit.prevent="submit()">
+            <div class="field standar">
+                <label for="bid">图书 id</label>
+                <input v-model="bid" type="text" placeholder="book id" />
+            </div>
+            <div class="field standar">
+                <label for="rid">读者 id</label>
+                <input v-model="rid" type="text" placeholder="reader id" />
+            </div>
+            <div class="field standar">
+                <label for="bborrow_time">借出时间</label>
+                <input v-model="borrow_time" type="text" placeholder="borrow time">
+            </div>
+            <div class="field standar">
+                <label for="bdue_time">应还时间</label>
+                <input v-model="due_time" type="text" placeholder="due time" />
+            </div>
+            <div class="field standar">
+                <label for="breturn_time">归还时间</label>
+                <input v-model="return_time" type="text" placeholder="return time" />
+            </div>
+            <div class="field standar">
+                <label for="bcomment">留言</label>
+                <input v-model="bcomment" type="text" placeholder="comment" />
+            </div>
+
+            <div style="clear: both;"></div>
+
+            <div id="control">
+                <span>{{ infomation }}</span>
+                <input type="submit" value="保存" class="special" />
+                <input type="reset" value="重置" />
+                <input type="reset" @click.prevent="goback" value="返回" />
+            </div>
+
+        </form>
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block afterhead %}
+
+<script src="/static/js/jquery.min.js"></script>
+<script src="/static/js/vue.min.js"></script>
+<script src="/static/js/axios.min.js"></script>
+<script>
+
+    // Editor
+
+        Vue.filter('datetime_filter', function (value) {
+            dt = new Date(value * 1000);
+            return dt.getFullYear() + '-' + (dt.getMonth() + 1) + '-' + dt.getDate();
+        });
+
+        var editor = new Vue({
+            el: "#editor",
+            {% if isNew %}
+            data: {
+                rid: '',
+                bid: '',
+                bborrow_time: '',
+                bdue_time: '',
+                breturn_time: '',
+                borrow_time: '',
+                due_time: '',
+                return_time: '',
+                bcomment: '',
+                infomation: '数据处理状态',
+                url: '/api/tool/borrow/new',
+            },
+            {% else %}
+            data: {
+                rid: '{( borrow.rid )}',
+                bid: '{( borrow.bid )}',
+                bborrow_time: '{( borrow.bborrow_time )}',
+                bdue_time: '{( borrow.bdue_time )}',
+                breturn_time: `{( borrow.breturn_time )}`,
+                borrow_time: '',
+                due_time: '',
+                return_time: '',
+                bcomment: `{(borrow.bcomment)}`,
+                infomation: '数据处理状态',
+                url: '/api/tool/borrow/edit/' + '{(borrow.id)}',
+            },
+            {% endif %}
+            methods: {
+                submit: function (event) {
+                    // 检查数据
+
+                    // 发送数据
+                    let formdata = new FormData();
+                    formdata.append('rid', this.rid);
+                    formdata.append('bid', this.bid);
+                    formdata.append('bborrow_time', this.date2num(this.borrow_time));
+                    formdata.append('bdue_time', this.date2num(this.due_time));
+                    formdata.append('breturn_time', this.date2num(this.return_time));
+                    formdata.append('bcomment', this.bcomment);
+                    formdata.append('submit', false);
+                    axios.post(this.url, formdata)
+                        .then(response => { this.infomation = "保存成功"; })
+                        .catch(err => {
+                            this.infomation = err.response ? err.response.data.substring(0, 66) : "保存失败";
+                        });
+                },
+                goback: function (event) {
+                    location.assign('/tool/library/borrows');
+                },
+                date2num: function(str) {
+                    re = /^20\d\d-[0-9]{1,2}-[0-9]{1,2}$/;
+                    if (!re.test(str)) {
+                        this.infomation = "日期错误！";
+                        return;
+                    }
+                    return new Date(str).getTime() / 1000;
+                },
+                num2date: function(value) {
+                    dt = new Date(value * 1000);
+                    return dt.getFullYear() + '-' + (dt.getMonth() + 1) + '-' + dt.getDate();
+                }
+            },
+            mounted: function() {
+                this.borrow_time = this.num2date(this.bborrow_time);
+                this.due_time = this.num2date(this.bdue_time);
+                this.return_time = this.num2date(this.breturn_time);
+            }
+        });
+
+</script>
+
+{% endblock %}

@@ -174,9 +174,12 @@ async def init(loop): # 2 生成web框架coroutine
     init_jinja2(app, filters=dict(datetime=datetime_filter))
     add_routes(app, 'handlers') # 2.2 映射首页处理请求，这里另设handler文件存放视图函数
     add_static(app)
-    srv = await loop.create_server(app.make_handler(), '127.0.0.1', 9000) # 2.3 建立服务器（协议工厂）
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, '127.0.0.1', 9000) # 2.3 建立服务器（协议工厂）
+    await site.start()
     logging.info('[APP] Server started at http://127.0.0.1:9000 ...')
-    return srv # 2.3 返回服务器对象
+    return site # 2.3 返回服务器对象
 
 loop = asyncio.get_event_loop() # 2 获取事件循环
 loop.run_until_complete(init(loop)) # 3 获取协程对象，注册为事件

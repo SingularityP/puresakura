@@ -1,0 +1,220 @@
+﻿{% extends 'base.html' %}
+
+{% block title %}[编辑] {( book_title )}{% endblock %}
+
+{% block beforehead %}
+<style>
+
+    /* Form */
+    form {
+        margin: 0;
+        padding: 0;
+        border: 0;
+        font-size: 100%;
+        font: inherit;
+        vertical-align: baseline;
+    }
+
+    /* Editor */
+    /* Form editor */
+    #form_editor {
+        padding: 8rem 5% 1rem 10%;
+        width: 80%;
+    }
+
+    .standar {
+        width: 30%;
+        float: left;
+        padding: 0 0 0 1.5rem;
+    }
+
+    #bexits, #bread_times {
+        width: 30%;
+        float: left;
+        padding: 0 0 0 1.5rem;
+    }
+
+    #bpublished_at {
+        width: 35%;
+        float: left;
+        padding: 0 0 0 1rem;
+    }
+
+        #bpublished_at input {
+            float: left;
+            width: 5rem;
+            margin: 0 0 0 0.5rem;
+        }
+
+
+    #control {
+        margin: 0 2.5rem 0 0;
+    }
+
+        #control input{
+            position: relative;
+            top: 2.2rem;
+            margin: 0 0.5rem 0 0;
+            float: right;
+        }
+
+        #control span {
+            position: relative;
+            top: 2.2rem;
+            margin: 1.3rem 0 0 1rem;
+            float: right;
+        }
+
+    #footer {
+        display: none;
+    }
+
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div id="editor">
+
+    <!-- Form editor -->
+    <div id="form_editor">
+        <form id="basic_form" @submit.prevent="submit()">
+            <div class="field standar">
+                <label for="btitle">书名</label>
+                <input v-model="btitle" type="text" placeholder="title" />
+            </div>
+            <div class="field standar">
+                <label for="bauthor">作者</label>
+                <input v-model="bauthor" type="text" placeholder="author" />
+            </div>
+            <div class="field standar">
+                <label for="bpublisher">出版社</label>
+                <input v-model="bpublisher" type="text" placeholder="publisher" />
+            </div>
+            <div id="bread_times" class="field">
+                <label for="bread_times">借阅量</label>
+                <input v-model="bread_times" type="text" placeholder="read_times" />
+            </div>
+            <div id="bsort" class="field standar">
+                <label for="bsort">分类</label>
+                <select v-model="bsort">
+                    <option value="未分类">未分类</option>
+                    <option value="心理自助">心理自助</option>
+                    <option value="文学">文学</option>
+                    <option value="游戏益智">游戏益智</option>
+                    <option value="经济与管理">经济与管理</option>
+                    <option value="卡通/漫画/绘本">卡通/漫画/绘本</option>
+                    <option value="文学">文学</option>
+                    <option value="传记">传记</option>
+                    <option value="学术文化">学术文化</option>
+                    <option value="少儿文学">少儿文学</option>
+                </select>
+            </div>
+            <div id="bexits" class="field">
+                <label for="bexits">在馆</label>
+                <select v-model="bexits">
+                    <option value="0">否</option>
+                    <option value="1">是</option>
+                </select>
+            </div>
+
+            <div style="clear: both;"></div>
+
+            <div id="bpublished_at" class="field">
+                <label for="bpublished_at">出版日期</label>
+                <input v-model="year" type="text" placeholder="年" />
+                <input v-model="month" type="text" placeholder="月" />
+                <input v-model="day" type="text" placeholder="日" />
+            </div>
+
+            <div id="control">
+                <span>{{ infomation }}</span>
+                <input type="submit" value="保存" class="special" />
+                <input type="reset" value="重置" />
+                <input type="reset" @click.prevent="goback" value="返回" />
+            </div>
+        </form>
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block afterhead %}
+
+<script src="/static/js/jquery.min.js"></script>
+<script src="/static/js/vue.min.js"></script>
+<script src="/static/js/axios.min.js"></script>
+<script>
+
+    // Editor
+
+        var editor = new Vue({
+            el: "#editor",
+            {% if isNew %}
+            data: {
+                btitle: '',
+                bauthor: '',
+                bpublisher: '',
+                bpublished_at: '',
+                bsort: '',
+                bexits: '',
+                bread_times: '',
+                infomation: '数据处理状态',
+                url: '/api/tool/book/new',
+                year: '',
+                month: '',
+                day: ''
+            },
+            {% else %}
+            data: {
+                btitle: '{( book.btitle )}',
+                bauthor: '{( book.bauthor )}',
+                bpublisher: '{( book.bpublisher )}',
+                bpublished_at: '{( book.bpublished_at )}',
+                bsort: `{( book.bsort )}`,
+                bexits: '{( book.bexits )}',
+                bread_times: '{( book.bread_times )}',
+                infomation: '数据处理状态',
+                url: '/api/tool/book/edit/' + '{(book.bid)}',
+                year: '',
+                month: '',
+                day: ''
+            },
+            {% endif %}
+            methods: {
+                submit: function (event) {
+                    // 发送数据
+                    let formdata = new FormData();
+                    formdata.append('btitle', this.btitle);
+                    formdata.append('bauthor', this.bauthor);
+                    formdata.append('bpublisher', this.bpublisher);
+                    formdata.append('bpublished_at', this.new_at);
+                    formdata.append('bsort', this.bsort);
+                    formdata.append('bexits', this.bexits);
+                    formdata.append('bread_times', this.bread_times);
+                    formdata.append('submit', false);
+                    axios.post(this.url, formdata)
+                        .then(response => { this.infomation = "保存成功"; })
+                        .catch(err => { this.infomation = "保存失败"; console.log(err); });
+                },
+                goback: function (event) {
+                    location.assign('/tool/library/books');
+                }
+            },
+            computed: {
+                new_at: function() {
+                    return new Date(this.year, this.month-1, this.day).getTime() / 1000;
+                }
+            },
+            mounted: function() {
+                dt = new Date(this.bpublished_at * 1000);
+                this.year = dt.getFullYear();
+                this.month = (dt.getMonth() + 1);
+                this.day = dt.getDate();
+            }
+        });
+
+</script>
+
+{% endblock %}

@@ -274,9 +274,15 @@ class Model(dict, metaclass=ModelMetaclass):
         sql = ""
         if items is None:
             if groupBy is None:
-                sql = ['SELECT %s FROM `%s`' % (','.join(list(map(lambda f: 'COUNT(`%s`)' % f, item_count)) + list(map(lambda g: 'SUM(`%s`)' % g, item_sum))) ,cls.__table__)]
+                if alias is False:
+                    sql = ['SELECT %s FROM `%s`' % (','.join(list(map(lambda f: 'COUNT(`%s`)' % f, item_count)) + list(map(lambda g: 'SUM(`%s`)' % g, item_sum))) ,cls.__table__)]
+                else:
+                    sql = ['SELECT %s FROM `%s`' % (','.join(list(map(lambda f: 'COUNT(`%s`) %s' % f, item_count)) + list(map(lambda g: 'SUM(`%s`) %s' % g, item_sum))) ,cls.__table__)]
             else:
-                sql = ['SELECT %s FROM `%s` GROUP BY `%s`' % (','.join(list(map(lambda f: 'COUNT(`%s`)' % f, item_count)) + list(map(lambda g: 'SUM(`%s`)' % g, item_sum))) ,cls.__table__, groupBy)]
+                if alias is False:
+                    sql = ['SELECT %s FROM `%s` GROUP BY `%s`' % (','.join(list(map(lambda f: 'COUNT(`%s`)' % f, item_count)) + list(map(lambda g: 'SUM(`%s`)' % g, item_sum))) ,cls.__table__, groupBy)]
+                else:
+                    sql = ['SELECT %s FROM `%s` GROUP BY `%s`' % (','.join(list(map(lambda f: 'COUNT(`%s`) %s' % f, item_count)) + list(map(lambda g: 'SUM(`%s`) %s' % g, item_sum))) ,cls.__table__, groupBy)]
         else:
             if groupBy is None:
                 if alias is False:

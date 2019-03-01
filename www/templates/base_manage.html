@@ -3,11 +3,9 @@
 {% block title %}管理系统{% endblock %}
 
 {% block beforehead %}
-<link rel="stylesheet" href="../static/css/editormd.css" type="text/css" />
-<link rel="stylesheet" href="/static/css/main2.css" type="text/css" />
 <style>
 
-    /* basic */
+    /* Basic */
     .active {
     }
 
@@ -16,14 +14,7 @@
         margin: 0.5rem 0;
     }
 
-    .dividerli {
-        height: 1px;
-        margin: 0.15rem;
-        overflow: hidden;
-        background-color: #e5e5e5;
-    }
-
-    /* nav */
+    /* Navigation general format */
     .nav {
         list-style-type: none;
         margin: 0;
@@ -32,7 +23,7 @@
         font-size: 0.8rem;
     }
 
-    /* 1 */
+    /* Navigation Bar */
     .navbar {
         position: fixed;
         top: 0;
@@ -42,21 +33,21 @@
         background-color: rgba(0, 0, 0, 0.25);
     }
 
-        .navbar a {
-            border-bottom: none;
+    .navbar a {
+        border-bottom: none;
+    }
+
+        /* Left part in Navigation Bar */
+        .navbar-header {
+            float: left;
+            padding: 0.25rem 0.5rem 0.15rem 1rem;
+            font-size: larger;
         }
 
-    /* 1.1 */
-    .navbar-header {
-        float: left;
-        padding: 0.25rem 0.5rem 0.15rem 1rem;
-        font-size: larger;
-    }
-
-    /* 1.2 */
-    .navbar-collapse {
-        padding: 0.25rem 0.5rem 0.15rem 1rem;
-    }
+        /* Right part in Navigation Bar */
+        .navbar-collapse {
+            padding: 0.25rem 0.5rem 0.15rem 1rem;
+        }
 
         .navbar-collapse ul li {
             -moz-transition: background-color 0.2s ease-in-out;
@@ -69,41 +60,41 @@
             border-radius: 5px;
         }
 
-            .navbar-collapse ul li:hover {
-                background-color: rgba(255, 255, 255, 0.175)
+        .navbar-collapse ul li:hover {
+            background-color: rgba(255, 255, 255, 0.175)
+        }
+
+            /* Dropdown in list item */
+
+            .dropdown {
             }
 
-    /* 1.2.1 */
+            .dropdown .dropdown-menu {
+                -moz-transition: opacity 0.2s ease-in-out;
+                -webkit-transition: opacity 0.2s ease-in-out;
+                -ms-transition: opacity 0.2s ease-in-out;
+                transition: opacity 0.2s ease-in-out;
+                position: absolute;
+                display: none;
+                opacity: 0;
+                box-sizing: border-box;
+            }
 
-    .dropdown {
-    }
+            .dropdown:hover .dropdown-menu {
+                margin: 0.55rem 0 0 -0.5rem;
+                border-radius: 5px;
+                background-color: rgba(0, 0, 0, 0.3);
+                display: block;
+                opacity: 1;
+            }
 
-        .dropdown .dropdown-menu {
-            -moz-transition: opacity 0.2s ease-in-out;
-            -webkit-transition: opacity 0.2s ease-in-out;
-            -ms-transition: opacity 0.2s ease-in-out;
-            transition: opacity 0.2s ease-in-out;
-            position: absolute;
-            display: none;
-            opacity: 0;
-            box-sizing: border-box;
-        }
+            .dropdown .dropdown-menu li {
+                float: none;
+            }
 
-        .dropdown:hover .dropdown-menu {
-            margin: 0.55rem 0 0 -0.5rem;
-            border-radius: 5px;
-            background-color: rgba(0, 0, 0, 0.3);
-            display: block;
-            opacity: 1;
-        }
+    /* Side Bar */
 
-        .dropdown .dropdown-menu li {
-            float: none;
-        }
-
-    /* aside */
-
-    /* 1 */
+    /* Side Bar general format */
     .sidebar {
         position: fixed;
         top: 2.55rem;
@@ -126,10 +117,10 @@
             border-bottom: none;
         }
 
-    /* 1.1 */
-    .nav-sidebar {
-        margin: 0 0 0.5rem 0;
-    }
+        /* Navigation in Side Bar */
+        .nav-sidebar {
+            margin: 0 0 0.5rem 0;
+        }
 
         .nav-sidebar li {
             -moz-transition: background-color 0.2s ease-in-out;
@@ -141,24 +132,25 @@
             padding: 0.05rem 0.5rem 0.05rem 0.5rem;
         }
 
-            .nav-sidebar li:hover {
-                background-color: rgba(255, 255, 255, 0.175)
+        .nav-sidebar li:hover {
+            background-color: rgba(255, 255, 255, 0.175)
+        }
+
+            /* Dropdown in list item */
+            .nav-dropdown {
+                -moz-transition: opacity 0.2s ease-in-out, height 0.2s ease-in-out;
+                -webkit-transition: opacity 0.2s ease-in-out, height 0.2s ease-in-out;
+                -ms-transition: opacity 0.2s ease-in-out, height 0.2s ease-in-out;
+                transition: opacity 0.2s ease-in-out, height 0.2s ease-in-out;
+                opacity: 0;
+                height: 0;
             }
 
-    /* 1.1.1 */
-    .nav-dropdown {
-        -moz-transition: opacity 0.2s ease-in-out, height 0.2s ease-in-out;
-        -webkit-transition: opacity 0.2s ease-in-out, height 0.2s ease-in-out;
-        -ms-transition: opacity 0.2s ease-in-out, height 0.2s ease-in-out;
-        transition: opacity 0.2s ease-in-out, height 0.2s ease-in-out;
-        opacity: 0;
-        height: 0;
-    }
+            .dropdown:hover .nav-dropdown {
+                opacity: 1;
+                height: auto;
+            }
 
-    .dropdown:active .nav-dropdown {
-        opacity: 1;
-        height: auto;
-    }
 </style>
 {% endblock %}
 
@@ -169,38 +161,37 @@
         <a class="navbar-brand" href="/">R 次源</a>
     </div>
     <div class="navbar-collapse">
-        <ul class="nav navbar-nav">
-            <li><a href="">消息 <span class="badge">1</span></a></li>
+        <ul id="status" class="nav">
+            <li><a @click="signout" href="#">退出</a></li>
             <li class="dropdown">
-                <a href="#" class="dropdown-toggle">admin</a>
+                <a href="#">用户</a>
                 <ul class="nav dropdown-menu">
                     <li><a title="查看或修改个人信息">个人信息</a></li>
-                    <li><a title="查看您的登录记录" href="#seeUserLoginlog">登录记录</a></li>
+                    <li><a title="查看您的登录记录" href="#">登录记录</a></li>
                 </ul>
             </li>
-            <li><a href="login.html" onClick="if(!confirm('是否确认退出？'))return false;">退出登录</a></li>
-            <li><a href="#WeChat">帮助</a></li>
+            <li><a href="#">帮助</a></li>
         </ul>
     </div>
 </nav>
 
 <aside class="sidebar">
     <ul class="nav nav-sidebar">
-        <li id="li_report" class="active"><a href="index.html">报告</a></li>
+        <li id="li_report" class="active"><a href="/manage/report">报告</a></li>
     </ul>
     <ul class="nav nav-sidebar">
         <li id="li_article"><a href="/manage/article">文章</a></li>
-        <li id="li_anounce"><a href="notice.html">公告</a></li>
-        <li id="li_comment"><a href="comment.html">评论</a></li>
+        <li id="li_anounce"><a href="#">公告</a></li>
+        <li id="li_comment"><a href="#">评论</a></li>
         <li id="li_discuss"><a data-toggle="tooltip" title="网站暂无留言功能">留言</a></li>
     </ul>
     <ul class="nav nav-sidebar">
-        <li id="li_section"><a href="category.html">栏目</a></li>
+        <li id="li_section"><a href="#">栏目</a></li>
         <li id="li_others" class="dropdown">
             <a href="#">其他</a>
             <ul class="nav nav-dropdown">
-                <li><a href="flink.html">友情链接</a></li>
-                <li><a href="#areDeveloping">访问记录</a></li>
+                <li><a href="#">友情链接</a></li>
+                <li><a href="#">访问记录</a></li>
             </ul>
         </li>
     </ul>
@@ -209,16 +200,16 @@
             <a href="#">用户</a>
             <ul class="nav nav-dropdown">
                 <li><a href="#areDeveloping">管理用户组</a></li>
-                <li><a href="manage-user.html">管理用户</a></li>
-                <li><a href="loginlog.html">管理登录日志</a></li>
+                <li><a href="">管理用户</a></li>
+                <li><a href="">管理登录日志</a></li>
             </ul>
         </li>
         <li id="li_setting" class="dropdown">
             <a href="#">设置</a>
             <ul class="nav nav-dropdown">
-                <li><a href="setting.html">基本设置</a></li>
-                <li><a href="readset.html">阅读设置</a></li>
-                <li><a href="#areDeveloping">安全配置</a></li>
+                <li><a href="#">基本设置</a></li>
+                <li><a href="#">阅读设置</a></li>
+                <li><a href="#">安全配置</a></li>
                 <li><a>扩展菜单</a></li>
             </ul>
         </li>
@@ -235,5 +226,20 @@
 
 <script src="../static/js/vue.min.js"></script>
 <script src="../static/js/axios.min.js"></script>
+<script>
+
+    var status = new Vue({
+        el: '#status',
+        methods: {
+            signout: function (event) {
+                axios.get("/api/signout")
+                    .then(location.assign("/"))
+                    .catch(err => console.log(err));
+                ;
+            }
+        }
+    });
+
+</script>
 
 {% endblock %}

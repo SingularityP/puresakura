@@ -1,0 +1,247 @@
+﻿<!DOCTYPE HTML>
+<!--
+	Dimension by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+<head>
+    <title>R 次源</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+    <link rel="stylesheet" href="../static/css/main.css" type="text/css" />
+    <link rel="stylesheet" href="/static/css/main2.css" type="text/css" />
+    <!--[if lte IE 9]><link rel="stylesheet" href="../static/css/ie9.css" /><![endif]-->
+    <noscript><link rel="stylesheet" href="../static/css/noscript.css" /></noscript>
+    <script>
+        {% if __user__ %}
+            location.assign("/tool/library/report");
+        {% else %}
+            location.assign("#signin");
+        {% endif %}
+    </script>
+</head>
+<body>
+
+    <!-- Users -->
+    <div id="users">
+
+        {% if __user__ %}
+            {% if __user__.admin %}
+            <a href="/manage/article">管理</a>
+            {% endif %}
+        <a href="/api/signout">登出</a>
+        {% else %}
+        <a href="#signin">登录</a> &nbsp;
+        <a href="#register">注册</a>
+        {% endif %}
+
+    </div>
+
+    <!-- Wrapper -->
+    <div id="wrapper">
+
+        <!-- Header -->
+
+        <!-- Main -->
+        <div id="main">
+
+            <!-- Signin -->
+            <article id="signin">
+                <form name="form_sig" @submit.prevent="submit()">
+                    <div class="field">
+                        <label for="email">邮箱</label>
+                        <input v-model="email" type="text" placeholder="Email" />
+                    </div>
+                    <div class="field">
+                        <label for="passwd">密码</label>
+                        <input v-model="passwd" type="password" placeholder="Password" />
+                    </div>
+                    <ul class="actions">
+                        <li><input type="submit" value="登录" class="special" /></li>
+                        <li><input type="reset" value="重置" /></li>
+                        <li><input @click="goReg" type="reset" value="去注册" /></li>
+                    </ul>
+                </form>
+            </article>
+
+            <!-- Register -->
+            <article id="register">
+                <form name="form_reg" @submit.prevent="submit()">
+                    <div class="field">
+                        <label for="name">用户名</label>
+                        <input v-model="name" type="text" placeholder="Name" />
+                    </div>
+                    <div class="field">
+                        <label for="email">邮箱</label>
+                        <input v-model="email" type="text" placeholder="Email" />
+                    </div>
+                    <div class="field half first">
+                        <label for="passwd">密码</label>
+                        <input v-model="passwd" type="password" placeholder="Password" />
+                    </div>
+                    <div class="field half">
+                        <label for="passwd2">重复密码</label>
+                        <input v-model="passwd2" type="password" placeholder="Retype Password" />
+                    </div>
+                    <ul class="actions">
+                        <li><input type="submit" value="注册" class="special" /></li>
+                        <li><input type="reset" value="重置" /></li>
+                        <li><input @click="goSig" type="reset" value="去登录" /></li>
+                    </ul>
+                </form>
+            </article>
+
+        </div>
+
+        <!-- Footer -->
+        <footer id="footer">
+            <p class="copyright">
+                &copy; 2019 <a href="https://arciyuan.com">Infuny</a>
+                <br />
+                <a href="http://www.miitbeian.gov.cn/">粤ICP备18112642号</a> | Powered by <a href="https://github.com/SingularityP">PureSakura</a>
+            </p>
+        </footer>
+
+    </div>
+
+    <!-- BG -->
+    <div id="bg"></div>
+
+    <!-- Scripts -->
+    <script src="../static/js/jquery.min.js"></script>
+    <script src="../static/js/skel.min.js"></script>
+    <script src="../static/js/util.js"></script>
+    <script src="../static/js/main.js"></script>
+    <script src="../static/js/vue.min.js"></script>
+    <script src="../static/js/axios.min.js"></script>
+    <script src="../static/js/sha1.min.js"></script>
+    <script type="text/javascript">
+
+        // script for "tech" and "life" part blogs initializion.
+
+        Vue.filter('datetime_filter', function (value) {
+            delta = new Date().getTime() - value*1000;
+            if (delta < 60) {
+                return '1 seconds ago';
+            }
+            if (delta < 3600) {
+                return Math.round(delta / 60) + 'minutes ago';
+            }
+            if (delta < 86400) {
+                return Math.round(delta / 3600) + 'hous ago';
+            }
+            if (delta < 604800) {
+                return Math.round(delta / 86400) + 'days ago';
+            }
+            dt = new Date(value*1000);
+            return dt.getFullYear() + '-' + (dt.getMonth() + 1) + '-' + dt.getDate();
+        });
+
+        Vue.component('blog', {
+            props: ['info', 'images'],
+            template: `
+                <div class="blogs">
+                    <h3 class="title"><a :href="'/blog/'+info.id">{{ info.name }}</a></h3>
+                    <div class="meta">
+                        <i class="icon fa-user"></i> {{ info.user_name }} &nbsp;
+                        <i class="icon fa-calendar"></i> {{ info.created_at | datetime_filter }} &nbsp;
+                        <i class="icon fa-eye"></i> {{ info.readers }} &nbsp;
+                    </div>
+                    <div class="clear"></div>
+                    <a :href="'/blog/'+info.id"><img :src="'..' + images.blog_path + 'imgS_' + info.id + '.jpg'" alt="图片被吞掉了！"/></a>
+                    <p class="summary">{{ info.summary }}</p>
+                    <div class="clear"></div>
+                </div>
+            `
+        });
+
+        // script for user register.
+
+        function validateEmail(email) {
+            var re = /^[a-z0-9\.\-\_]+@[a-z0-9\-\_]+(\.[a-z0-9\-\_]+){1,4}$/;
+            return re.test(email.toLowerCase());
+        }
+
+        var reg = new Vue({
+            el: '#register',
+            data: {
+                name: '',
+                email: '',
+                passwd: '',
+                passwd2: ''
+            },
+            methods: {
+                submit: function (event) {
+                    if (!this.name.trim()) {
+                        alert('请输入用户名！');
+                        return;
+                    }
+                    if (!validateEmail(this.email.trim().toLowerCase())) {
+                        alert('请输入正确的 email 地址！');
+                        return;
+                    }
+                    if (this.passwd.length < 6) {
+                        alert('密码长度至少为 6 位！');
+                        return;
+                    }
+                    if (this.passwd !== this.passwd2) {
+                        alert('两次输入的密码不一致！');
+                        return;
+                    }
+                    axios.post('/api/register', {
+                        name: this.name.trim(),
+                        email: this.email.trim().toLowerCase(),
+                        passwd: CryptoJS.SHA1(this.email + ':' + this.passwd).toString()
+                    })
+                        .then(function (response) {
+                            console.log(response);
+                            location.assign('/tool/library');
+                        })
+                        .catch(function (err) {
+                            console.log(err);
+                            // location.assign('/api/register');
+                        })
+                },
+                goSig: function () {
+                    location.assign("#signin");
+                }
+            }
+        });
+
+        // script for user sign in
+
+        var sig = new Vue({
+            el: '#signin',
+            data: {
+                email: '',
+                passwd: ''
+            },
+            methods: {
+                submit: function (event) {
+                    if (!validateEmail(this.email.trim().toLowerCase())) {
+                        alert('请输入正确的 email 地址！');
+                        return;
+                    }
+                    axios.post('/api/signin', {
+                        email: this.email.trim().toLowerCase(),
+                        passwd: this.passwd === '' ? '' : CryptoJS.SHA1(this.email + ':' + this.passwd).toString()
+                    })
+                        .then(function (response) {
+                            console.log(response);
+                            location.assign('/tool/library');
+                        })
+                        .catch(function (err) {
+                            console.log(err);
+                            // location.assign('/');
+                        })
+                },
+                goReg: function (event) {
+                    location.assign('#register');
+                }
+            }
+        });
+
+    </script>
+</body>
+</html>

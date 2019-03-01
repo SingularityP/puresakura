@@ -1,0 +1,192 @@
+﻿{% extends 'base.html' %}
+
+{% block title %}[编辑] {( reader_name )}{% endblock %}
+
+{% block beforehead %}
+<style>
+
+    /* Form */
+    form {
+        margin: 0;
+        padding: 0;
+        border: 0;
+        font-size: 100%;
+        font: inherit;
+        vertical-align: baseline;
+    }
+
+    /* Editor */
+    /* Form editor */
+    #form_editor {
+        padding: 8rem 5% 1rem 10%;
+        width: 80%;
+    }
+
+    .standar {
+        width: 30%;
+        float: left;
+        padding: 0 0 0 1.5rem;
+    }
+
+    #bexits, #bread_times {
+        width: 30%;
+        float: left;
+        padding: 0 0 0 1.5rem;
+    }
+
+    #bpublished_at {
+        width: 35%;
+        float: left;
+        padding: 0 0 0 1rem;
+    }
+
+        #bpublished_at input {
+            float: left;
+            width: 5rem;
+            margin: 0 0 0 0.5rem;
+        }
+
+
+    #control {
+        margin: 0 2.5rem 0 0;
+    }
+
+        #control input{
+            position: relative;
+            top: 2.2rem;
+            margin: 0 0.5rem 0 0;
+            float: right;
+        }
+
+        #control span {
+            position: relative;
+            top: 2.2rem;
+            margin: 1.3rem 0 0 1rem;
+            float: right;
+        }
+
+    #footer {
+        display: none;
+    }
+
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div id="editor">
+
+    <!-- Form editor -->
+    <div id="form_editor">
+        <form id="basic_form" @submit.prevent="submit()">
+            <div class="field standar">
+                <label for="rname">用户名</label>
+                <input v-model="rname" type="text" placeholder="name" />
+            </div>
+            <div class="field standar">
+                <label for="rsex">性别</label>
+                <select v-model="rsex">
+                    <option value="1">男</option>
+                    <option value="0">女</option>
+                </select>
+            </div>
+            <div class="field standar">
+                <label for="remail">邮箱</label>
+                <input v-model="remail" type="text" placeholder="email" />
+            </div>
+            <div class="field standar">
+                <label for="rrole">借书卡类型</label>
+                <select v-model="rrole">
+                    <option value="老师">老师</option>
+                    <option value="学生">学生</option>
+                    <option value="其他市民">其他市民</option>
+                </select>
+            </div>
+            <div class="field standar">
+                <label for="radmin">管理员</label>
+                <select v-model="radmin">
+                    <option value="0">否</option>
+                    <option value="1">是</option>
+                </select>
+            </div>
+
+            <div style="clear: both;"></div>
+
+            <div id="control">
+                <span>{{ infomation }}</span>
+                <input type="submit" value="保存" class="special" />
+                <input type="reset" value="重置" />
+                <input type="reset" @click.prevent="goback" value="返回" />
+            </div>
+
+        </form>
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block afterhead %}
+
+<script src="/static/js/jquery.min.js"></script>
+<script src="/static/js/vue.min.js"></script>
+<script src="/static/js/axios.min.js"></script>
+<script>
+
+    // Editor
+
+        var editor = new Vue({
+            el: "#editor",
+            {% if isNew %}
+            data: {
+                rname: '',
+                rsex: '',
+                remail: '',
+                rrole: '',
+                radmin: '',
+                infomation: '数据处理状态',
+                url: '/api/tool/reader/new',
+            },
+            {% else %}
+            data: {
+                rname: '{( reader.rname )}',
+                rsex: '{( reader.rsex )}',
+                remail: '{( reader.remail )}',
+                rrole: '{( reader.rrole )}',
+                radmin: `{( reader.radmin )}`,
+                infomation: '数据处理状态',
+                url: '/api/tool/reader/edit/' + '{(reader.rid)}',
+            },
+            {% endif %}
+            methods: {
+                submit: function (event) {
+                    // 检查数据
+                    if (!this.validateEmail(this.remail.trim().toLowerCase())) {
+                        this.infomation = '请输入正确的 email 地址！';
+                        return;
+                    }
+                    // 发送数据
+                    let formdata = new FormData();
+                    formdata.append('rname', this.rname);
+                    formdata.append('rsex', this.rsex);
+                    formdata.append('remail', this.remail);
+                    formdata.append('rrole', this.rrole);
+                    formdata.append('radmin', this.radmin);
+                    formdata.append('submit', false);
+                    axios.post(this.url, formdata)
+                        .then(response => { this.infomation = "保存成功"; })
+                        .catch(err => { this.infomation = "保存失败"; console.log(err); });
+                },
+                goback: function (event) {
+                    location.assign('/tool/library/readers');
+                },
+                validateEmail: function (email) {
+                    var re = /^[a-z0-9\.\-\_]+@[a-z0-9\-\_]+(\.[a-z0-9\-\_]+){1,4}$/;
+                    return re.test(email.toLowerCase());
+                }
+            }
+        });
+
+</script>
+
+{% endblock %}
