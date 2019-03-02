@@ -185,7 +185,8 @@ async def getBlog(id):
     return {
             '__template__': 'blog.html',
             'blog_name': blog.name,
-            'blog_id': blog.id
+            'blog_id': blog.id,
+            'blog': blog,
             }
     
 ### 3.1.2 获取博客创建页 manage_blog_edit.html
@@ -215,16 +216,14 @@ async def getBlogEdit(id):
             }
 
 # 3.2 API 请求
-# 3.2.1 博客数据传输
+# 3.2.1 博客评论数据传输
 @get('/api/blog/{id}')
 async def getBlogData(id):
     logging.debug('[HANDLERS] Handlering /aip/blog/{id} in index.html ...')
-    blog = await Blog.find(id)
     comments = await Comment.findAll('blog_id=?', [id], orderBy='created_at desc')
     for comment in comments:
          comment.replies = await Reply.findAll('target_cmid=?', comment.id, orderBy='created_at desc', items=['user_name', 'user_id', 'target_name', 'content', 'created_at'])
     return {
-            'blog_data': blog,
             'comment_data': comments,
             'images' : configs.images
             }
@@ -336,7 +335,7 @@ async def editBlogData(id, request, *, name, summary, content, sort, file):
     await blog.update() # 更新数据库
     # 存储图片
     logging.debug('[HANDLERS]     Type of variable file: ' + str(type(file)))
-    if file != '' and file!=None:
+    if not (isinstance(file,str) or file==None):
         img_name = blog.id + '.jpg'
         img_data = file.file
         await saveImage(img_name, img_data, 'blog')

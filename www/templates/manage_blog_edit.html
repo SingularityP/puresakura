@@ -106,13 +106,15 @@
         <form id="img_form" method="post" enctype="multipart/form-data">
             <div id="img_preview"></div>
             <input id="img_file" type="file" @change="fileChange" />
-            <p id="img_info">{{ image_information }}</p>
+            <p id="img_info">{{image_information}}</p>
         </form>
     </div>
 
     <div id="blog_info">
         <p v-bind:style="errored">{{blog_information}}</p>
     </div>
+
+    <div id="temp" style="display:none;">{(blog.content | safe)}</div>
 
 </div>
 
@@ -178,7 +180,7 @@
             data: {
                 name: '{( blog.name )}',
                 summary: '{( blog.summary )}',
-                content: `{( blog.content )}`,
+                content: ``,
                 sort: '{( blog.sort )}',
                 img_file: null,
                 image_information: '图片处理信息',
@@ -227,6 +229,8 @@
                     reader.readAsDataURL(file);
                 },
                 submit: function (event) {
+                    // 获取内容
+                    this.content = document.getElementsByClassName("editormd-markdown-textarea")[0].innerHTML;
                     // 检查数据
                     if (this.name == '') {
                         this.blog_information = "标题不能为空！";
@@ -248,8 +252,6 @@
                         this.errored = { color: 'red' };
                         return;
                     }
-                    // 获取内容
-                    this.content = document.getElementsByClassName("editormd-markdown-textarea")[0].innerHTML;
                     // 发送数据
                     let formdata = new FormData();
                     formdata.append('name', this.name);
@@ -291,7 +293,7 @@
                 }
             },
             mounted: function() {
-                document.getElementsByClassName("editormd-markdown-textarea")[0].innerHTML = this.content;
+                document.getElementsByClassName("editormd-markdown-textarea")[0].innerHTML = document.getElementById("temp").innerHTML;
             }
         });
 

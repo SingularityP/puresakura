@@ -1,4 +1,4 @@
-﻿{% extends 'base.html' %}
+{% extends 'base.html' %}
 
 {% block title %}{( blog_name )}{% endblock %}
 
@@ -7,10 +7,11 @@
 <style>
 
     #editor {
-        line-height: 1.65;
+        line-height: 1.35;
         width: 60rem;
         max-width: 100%;
         margin: auto;
+        font-size: 0.8rem;
     }
 
     #md_editor {
@@ -33,7 +34,7 @@
 
 <div id="editor">
     <div id="md_editor" :style="md_style">
-        <textarea>{{ blog_data.content }}</textarea>
+        <textarea>{(blog.content|safe)}</textarea>
     </div>
 </div>
 
@@ -44,7 +45,6 @@
 <script src="../static/js/jquery.min.js"></script>
 <script src="../static/js/vue.min.js"></script>
 <script src="../static/js/axios.min.js"></script>
-<script src="../static/js/editormd.min.js"></script>
 <script src="../static/lib/marked.min.js"></script>
 <script src="../static/lib/prettify.min.js"></script>
 <script src="../static/lib/raphael.min.js"></script>
@@ -52,13 +52,13 @@
 <script src="../static/lib/sequence-diagram.min.js"></script>
 <script src="../static/lib/flowchart.min.js"></script>
 <script src="../static/lib/jquery.flowchart.min.js"></script>
+<script src="../static/js/editormd.min.js"></script>
 <script>
 
     var blog_data, comment_data, images;
     var editor = new Vue({
         el: '#editor',
         data: {
-            blog_data: '',
             comment: '',
             images: '',
             opacity: '0'
@@ -76,17 +76,15 @@
             }
         },
         mounted: function () {
-            axios.get('/api/blog/{( blog_id )}')
+            axios.get('/api/blog/{(blog_id)}')
                 .then(response => {
-                    this.blog_data = response.data.blog_data;
                     this.comment_data = response.data.comment_data;
                     this.images = response.data.images;
                 })
                 .catch(function (err) {
                     console.log(err);
                 });
-        },
-        updated: function () {
+
             editormd.markdownToHTML("md_editor", {
                 htmlDecode: "style,script,iframe",  // you can filter tags decode
                 emoji: true,

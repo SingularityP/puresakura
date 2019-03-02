@@ -9,13 +9,11 @@ async web application.
 
 import asyncio, os, json, time # 导入异步IO相关模块
 from datetime import datetime # 导入时间模块
-
 from aiohttp import web # 导入异步的Web框架
 from jinja2 import Environment, FileSystemLoader # 导入jinja2模板引擎
 
 import orm
 from coroweb import add_routes, add_static
-
 from handlers import cookie2user, COOKIE_NAME
 from config import configs
 
@@ -55,7 +53,7 @@ def init_jinja2(app, **kw):
     app['__templating__'] =  env
     logging.info('[APP] Finish initializing jinja2 ...')
     
-# 编写过滤器
+# jinja2 日期过滤器
 def datetime_filter(t):
     delta = int(time.time()-t)
     if delta < 60:
