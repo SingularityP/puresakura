@@ -1,4 +1,4 @@
-﻿{% extends 'base.html' %}
+{% extends 'base.html' %}
 
 {% block title %}[编辑] {( blog_name )}{% endblock %}
 
@@ -32,13 +32,13 @@
     #form_editor input[type="submit"], #form_editor input[type="reset"] {
         position: relative;
         top: 2.2rem;
-        margin: 0 0 0 1rem;
-        float: right;
+        margin: 0 0 0 0.75rem;
+        float: left;
     }
 
     /* Image editor */
     #img_editor {
-        padding: 2.2rem 5% 1rem 0;
+        padding: 2.4rem 0 1rem 0;
         float: left;
         width: 30%;
         height: 14.2rem;
@@ -47,7 +47,7 @@
     #img_preview {
         border: 1px solid #ccc;
         width: 100%;
-        height: 100%;
+        height: 14rem;
         background-repeat: no-repeat;
         background-position: center center;
         background-size: contain;
@@ -60,6 +60,13 @@
     #img_editor p {
         margin: 3px 0 0 0;
         font-size: 0.8rem;
+    }
+
+    /* Blog_information */
+    #blog_info {
+        position: relative;
+        float: left;
+        margin: 1.8rem;
     }
 
 </style>
@@ -89,7 +96,8 @@
                 </select>
             </div>
             <input type="submit" value="保存" class="special" />
-            <input type="reset" value="重置" />
+            <input @click="reset" type="reset" value="重置" />
+            <input @click="goBack" type="reset" value="返回" />
         </form>
     </div>
 
@@ -98,8 +106,12 @@
         <form id="img_form" method="post" enctype="multipart/form-data">
             <div id="img_preview"></div>
             <input id="img_file" type="file" @change="fileChange" />
-            <p id="img_info">{{ infomation }}</p>
+            <p id="img_info">{{ image_information }}</p>
         </form>
+    </div>
+
+    <div id="blog_info">
+        <p v-bind:style="errored">{{blog_information}}</p>
     </div>
 
 </div>
@@ -157,8 +169,10 @@
                 sort: '',
                 img_file: null,
                 img_url: '',
-                infomation: '图片处理信息',
-                url: '/api/blog/new'
+                image_information: '图片处理信息',
+                blog_information: '博客处理信息',
+                url: '/api/blog/new',
+                errored: { color: 'white'}
             },
             {% else %}
             data: {
@@ -167,8 +181,10 @@
                 content: `{( blog.content )}`,
                 sort: '{( blog.sort )}',
                 img_file: null,
-                infomation: '图片处理信息',
-                url: '/api/blog/edit/' + '{( blog.id )}'
+                image_information: '图片处理信息',
+                blog_information: '博客处理信息',
+                url: '/api/blog/edit/' + '{( blog.id )}',
+                errored: { color: 'white' }
             },
             {% endif %}
             methods: {
@@ -211,6 +227,27 @@
                     reader.readAsDataURL(file);
                 },
                 submit: function (event) {
+                    // 检查数据
+                    if (this.name == '') {
+                        this.blog_information = "标题不能为空！";
+                        this.errored = { color: 'red' };
+                        return;
+                    }
+                    if (this.summary == '') {
+                        this.blog_information = "摘要不能为空！";
+                        this.errored = { color: 'red' };
+                        return;
+                    }
+                    if (this.sort == '') {
+                        this.blog_information = "分类不能为空！";
+                        this.errored = { color: 'red' };
+                        return;
+                    }
+                    if (this.content == '') {
+                        this.blog_information = "内容不能为空！";
+                        this.errored = { color: 'red' };
+                        return;
+                    }
                     // 获取内容
                     this.content = document.getElementsByClassName("editormd-markdown-textarea")[0].innerHTML;
                     // 发送数据
@@ -227,8 +264,30 @@
                         }
                     }
                     axios.post(this.url, formdata, config)
-                        .then(response => { this.infomation = "图片上传成功"; })
-                        .catch(err => { this.infomation = "图片上传失败"; console.log(err); });
+                        .then(response => {
+                            this.infomation = "图片上传成功！";
+                            this.blog_information = "博客保存成功！";
+                            this.errored = { color: 'white' };
+                        })
+                        .catch(err => {
+                            this.image_infomation = "图片上传失败！";
+                            this.blog_information = err.response ? err.response.data : err.response.message;
+                            this.errored = { color: 'red' };
+                        });
+                },
+                reset: function() {
+                    this.name = "";
+                    this.summary = "";
+                    this.content = "";
+                    this.sort = '';
+                    this.img_file = null;
+                    this.img_url = null;
+                    this.image_information = "图片处理信息";
+                    this.blog_information = "博客处理信息";
+                    this.errored = { color: 'white' };
+                },
+                goBack: function() {
+                    location.assign('/manage/article');
                 }
             },
             mounted: function() {
