@@ -1,0 +1,137 @@
+{% extends 'base_manage.html' %}
+
+{% block title %}{( super() )}{% endblock %}
+
+{% block beforehead %}
+
+{( super() )}
+
+<style>
+
+    /* 全局 */
+
+    #footer {
+        display: none;
+    }
+
+</style>
+
+{% endblock %}
+
+{% block section %}
+
+<div id="controller">
+    <h3 class="page_header">操作</h3>
+
+    <hr class="divider" />
+
+    <ol class="breadcumb">
+        <li><a href="/#register">增加用户</a></li>
+    </ol>
+
+    <div style="clear:both"></div>
+
+    <h3 class="page_header">管理</h3>
+
+    <hr class="divider" />
+
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>用户名</th>
+                    <th>邮箱</th>
+                    <th>个性签名</th>
+                    <th>最后登录时间</th>
+                    <th>注册时间</th>
+                    <th>管理员标识</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="info in infos">
+                    <td><a :href="'/user/'+info.id">{{ info.name }}</a></td>
+                    <td>{{ info.email }}</td>
+                    <td>{{ info.signature ? info.signature : '暂无个性签名' }}</td>
+                    <td>{{ info.login_at | datetime_filter }}</td>
+                    <td>{{ info.created_at | datetime_filter }}</td>
+                    <td>{{ info.admin ? '是' : '否' }}</td>
+                    <td><a href="#" @click="edit_user(info.id)">修改</a> <a href="#" @click="delete_user(info.id, info.name)">删除</a></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="message_footer">
+        <pagination :page_index="page.page_index"
+                    :has_previous="page.has_previous"
+                    :has_next="page.has_next"
+                    :page_count="page.page_count"
+                    :range="range"
+                    @changeinfos="goto_Page($event)">
+        </pagination>
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block afterhead %}
+
+{( super() )}
+
+<script>
+
+    var controller = new Vue({
+        el: '#controller',
+        data: {
+            infos: [],
+            page: '',
+            images: ''
+        },
+        methods: {
+            edit_user: function (user_id) {
+                location.assign('/manage/user/edit/' + user_id);
+            },
+            delete_user: function (user_id, user_name='') {
+                if (confirm('确认要删除“' + user_name + '”？删除后不可恢复！')) {
+                    axios.get('/api/user/del/' + user_id)
+                        .then(location.reload())
+                        .catch(err => console.log(err));
+                }
+            },
+            goto_Page: function (new_page_index) {
+                console.log('goto_page(' + new_page_index + ')')
+                axios.get('/api/users/0', { params: { page: new_page_index } })
+                    .then(response => {
+                        this.infos = response.data.infos;
+                        this.page = response.data.page;
+                    })
+                    .catch(err => { console.log(err); });
+            }
+        },
+        mounted: function () {
+            axios.get('/api/users/0')
+                .then(response => {
+                    this.infos = response.data.infos;
+                    this.page = response.data.page;
+                    this.images = response.data.images;
+                })
+                .catch(err => { console.log(err); });
+        },
+        computed: {
+            range: function () {
+                arr = [];
+                for (let i = 0; i < this.page.page_count; i++) {
+                    arr.push(i + 1);
+                }
+                return arr;
+            }
+        }
+    });
+
+    document.getElementById("li_user").style.backgroundColor = 'rgba(255, 255, 255, 0.175)';
+
+</script>
+
+{% endblock %}

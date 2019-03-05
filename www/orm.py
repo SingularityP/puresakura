@@ -41,15 +41,18 @@ def select(sql, args, size=None): # SELECT语句封装
     log(sql, args) # 记录日志
     global __pool # 声明连接池全局变量
     with (yield from __pool) as conn: # 异步获取一个连接
-        cur = yield from conn.cursor(aiomysql.DictCursor) # 获取数据库游标，默认游标返回字典
-        yield from cur.execute(sql.replace('?', '%s'), args or ()) # 执行select语句，用参数替换占位符'?'或'%s'
-        if size: # 视情况获取定量数据
-            rs = yield from cur.fetchmany(size)
-        else:
-            rs = yield from cur.fetchall()
-        yield from cur.close() # 关闭指针
-        logging.info('[ORM]     rows return: %s' % len(rs)) # 记录日志
-        return rs # 返回数据
+        try:
+            cur = yield from conn.cursor(aiomysql.DictCursor) # 获取数据库游标，默认游标返回字典
+            yield from cur.execute(sql.replace('?', '%s'), args or ()) # 执行select语句，用参数替换占位符'?'或'%s'
+            if size: # 视情况获取定量数据
+                rs = yield from cur.fetchmany(size)
+            else:
+                rs = yield from cur.fetchall()
+            yield from cur.close() # 关闭指针
+            logging.info('[ORM]     rows return: %s' % len(rs)) # 记录日志
+            return rs # 返回数据
+        except BaseException as e:
+            logging.error('[ORM] ' + str(e))
 
 @asyncio.coroutine
 def execute(sql, args): # INSERT, UPDATE, DELETE语句封装

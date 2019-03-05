@@ -1,41 +1,57 @@
 {% extends 'base.html' %}
 
-{% block title %}{( blog_name )}{% endblock %}
+{% block title %}{(blog.name)}{% endblock %}
 
 {% block beforehead %}
 <link rel="stylesheet" href="../static/css/editormd.min.css" type="text/css" />
-<style>
-
-    #editor {
-        line-height: 1.35;
-        width: 60rem;
-        max-width: 100%;
-        margin: auto;
-        font-size: 0.8rem;
-    }
-
-    #md_editor {
-        -moz-transform: translateY(0.25rem);
-        -webkit-transform: translateY(0.25rem);
-        -ms-transform: translateY(0.25rem);
-        transform: translateY(0.25rem);
-        -moz-transition: opacity 0.325s ease-in-out, -moz-transform 0.325s ease-in-out;
-        -webkit-transition: opacity 0.325s ease-in-out, -webkit-transform 0.325s ease-in-out;
-        -ms-transition: opacity 0.325s ease-in-out, -ms-transform 0.325s ease-in-out;
-        transition: opacity 0.325s ease-in-out, transform 0.325s ease-in-out;
-        opacity: 0;
-    }
-
-</style>
 {% endblock %}
 
 {% block content %}
 
 
-<div id="editor">
+<div id="re_editor">
+
     <div id="md_editor" :style="md_style">
         <textarea>{(blog.content|safe)}</textarea>
     </div>
+
+    <div id="cm_editor">
+    {% if __user__ %}
+
+        <h3>评论</h3>
+
+        <hr class="divider" />
+
+        <form id="reply" @submit.prevent="submit()">
+            <img class="user_img" :src="user_img" />
+            <textarea v-model="content"></textarea>
+            <input type="submit" value="回复" />
+        </form>
+
+        <div style="clear:both"></div>
+
+        <div id="comment">
+            <outcomment v-for="comment in comments"
+                        v-bind:key="comment.id"
+                        v-bind:comment="comment"
+                        v-bind:images="images"
+                        ></outcomment>
+        </div>
+
+    {% else %}
+
+        <h3>请登录后发表评论</h3>
+
+        <hr class="divider" />
+
+        <div class="grid grid-col-1-2">
+            <div id="sig_part"><a href="/#signin"><i class="icon fa-sign-in"></i> 登录</a></div>
+            <div id="reg_part"><a href="/#register"><i class="icon fa-user-plus"></i> 注册</a></div>
+        </div>
+
+    {% endif %}
+     </div>
+
 </div>
 
 {% endblock %}
@@ -53,15 +69,17 @@
 <script src="../static/lib/flowchart.min.js"></script>
 <script src="../static/lib/jquery.flowchart.min.js"></script>
 <script src="../static/js/editormd.min.js"></script>
+<script src="../static/js/main2.js"></script>
 <script>
 
-    var blog_data, comment_data, images;
     var editor = new Vue({
-        el: '#editor',
+        el: '#re_editor',
         data: {
-            comment: '',
+            content: '',
+            comments: '',
             images: '',
-            opacity: '0'
+            opacity: '0',
+            user_img: '',
         },
         computed: {
             md_style: function () {
@@ -75,11 +93,26 @@
                 };
             }
         },
+        methods: {
+            submit: function (event) {
+                if (this.content === '') {
+                    alert("评论不能为空！");
+                    return;
+                }
+                axios.post('/api/comment/new/{(blog.id)}', {
+                    content: this.content
+                })
+                    .then(location.reload())
+                    .catch(err => console.log(err));
+            },
+
+        },
         mounted: function () {
-            axios.get('/api/blog/{(blog_id)}')
+            axios.get('/api/blog/{(blog.id)}')
                 .then(response => {
-                    this.comment_data = response.data.comment_data;
+                    this.comments = response.data.comments;
                     this.images = response.data.images;
+                    this.user_img = this.images.user_path + '{( __user__.id )}.jpg';
                 })
                 .catch(function (err) {
                     console.log(err);
@@ -96,9 +129,6 @@
             this.opacity = '1';
         }
     });
-
-
-
 
 </script>
 

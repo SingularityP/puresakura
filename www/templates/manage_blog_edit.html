@@ -3,78 +3,14 @@
 {% block title %}[编辑] {( blog_name )}{% endblock %}
 
 {% block beforehead %}
+
 <link rel="stylesheet" href="/static/css/editormd.min.css" type="text/css" />
-<style>
 
-    /* Form */
-    form {
-        margin: 0;
-        padding: 0;
-        border: 0;
-        font-size: 100%;
-        font: inherit;
-        vertical-align: baseline;
-    }
-
-    /* Editor */
-    /* Form editor */
-    #form_editor {
-        padding: 0.2rem 5% 1rem 5%;
-        float: left;
-        width: 30%;
-    }
-
-    #sort {
-        width: 40%;
-        float: left;
-    }
-
-    #form_editor input[type="submit"], #form_editor input[type="reset"] {
-        position: relative;
-        top: 2.2rem;
-        margin: 0 0 0 0.75rem;
-        float: left;
-    }
-
-    /* Image editor */
-    #img_editor {
-        padding: 2.4rem 0 1rem 0;
-        float: left;
-        width: 30%;
-        height: 14.2rem;
-    }
-
-    #img_preview {
-        border: 1px solid #ccc;
-        width: 100%;
-        height: 14rem;
-        background-repeat: no-repeat;
-        background-position: center center;
-        background-size: contain;
-    }
-
-    #img_editor input {
-        float: left;
-    }
-
-    #img_editor p {
-        margin: 3px 0 0 0;
-        font-size: 0.8rem;
-    }
-
-    /* Blog_information */
-    #blog_info {
-        position: relative;
-        float: left;
-        margin: 1.8rem;
-    }
-
-</style>
 {% endblock %}
 
 {% block content %}
 
-<div id="editor">
+<div id="blog_editor">
 
     <!-- Form editor -->
     <div id="form_editor">
@@ -162,7 +98,7 @@
     // Editor
 
         var editor = new Vue({
-            el: "#editor",
+            el: "#blog_editor",
             {% if isNew %}
             data: {
                 name: '',
@@ -170,7 +106,6 @@
                 content: '',
                 sort: '',
                 img_file: null,
-                img_url: '',
                 image_information: '图片处理信息',
                 blog_information: '博客处理信息',
                 url: '/api/blog/new',
@@ -196,13 +131,13 @@
                         preview = document.getElementById('img_preview');
                     // 清除背景图片和信息
                     preview.style.backgroundImage = '';
-                    this.infomation = '';
+                    this.image_information = '';
                     // 获取图片数据
                     this.img_file = event.target.files[0];
                     console.log(this.img_file);
                     // (1) 检查文件是否选择
                     if (!img_file) {
-                        this.infomation = '没有选择图片';
+                        this.image_information = '没有选择图片';
                         return;
                     }
                     // (2) 文件已选择，检查图片格式要求，获取 File 引用
@@ -218,7 +153,7 @@
                         return false;
                     }
                     // (3) 文件符合格式要求，获取 File 信息
-                    this.infomation = "大小: " + file.size + "kb" + " 修改: " + file.lastModifiedDate;
+                    this.image_information = "大小: " + file.size + "kb" + " 修改: " + file.lastModifiedDate;
                     // (4) 读取并上传文件
                     var reader = new FileReader();
                     reader.onload = function (e) {
@@ -267,12 +202,12 @@
                     }
                     axios.post(this.url, formdata, config)
                         .then(response => {
-                            this.infomation = "图片上传成功！";
+                            this.image_information = "图片上传成功！";
                             this.blog_information = "博客保存成功！";
                             this.errored = { color: 'white' };
                         })
                         .catch(err => {
-                            this.image_infomation = "图片上传失败！";
+                            this.image_information = "图片上传失败！";
                             this.blog_information = err.response ? err.response.data : err.response.message;
                             this.errored = { color: 'red' };
                         });
@@ -283,13 +218,12 @@
                     this.content = "";
                     this.sort = '';
                     this.img_file = null;
-                    this.img_url = null;
                     this.image_information = "图片处理信息";
                     this.blog_information = "博客处理信息";
                     this.errored = { color: 'white' };
                 },
                 goBack: function() {
-                    location.assign('/manage/article');
+                    location.assign('/manage/blog');
                 }
             },
             mounted: function() {
@@ -299,6 +233,7 @@
 
     {% if not isNew %}
         document.getElementById('img_preview').style.backgroundImage = 'url({( images.blog_path )}{( blog_id )}.jpg)';
+        document.getElementById('md_editor').style.opacity = 1;
     {% endif %}
 
 </script>

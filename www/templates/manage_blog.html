@@ -1,0 +1,133 @@
+﻿{% extends 'base_manage.html' %}
+
+{% block title %}{( super() )}{% endblock %}
+
+{% block beforehead %}
+
+{( super() )}
+
+<style>
+
+    /* 全局 */
+
+    #footer {
+        display: none;
+    }
+
+</style>
+
+{% endblock %}
+
+{% block section %}
+
+<div id="controller">
+    <h3 class="page_header">操作</h3>
+
+    <hr class="divider" />
+
+    <ol class="breadcumb">
+        <li><a href="/manage/blog/new">增加文章</a></li>
+    </ol>
+
+    <div style="clear:both"></div>
+
+    <h3 class="page_header">管理</h3>
+
+    <hr class="divider" />
+
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>标题</th>
+                    <th>用户名</th>
+                    <th>日期</th>
+                    <th>阅读量</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="info in infos">
+                    <td><a :href="'/blog/'+info.id">{{ info.name }}</a></td>
+                    <td>{{ info.user_name }}</td>
+                    <td>{{ info.created_at | datetime_filter }}</td>
+                    <td>{{ info.readers }}</td>
+                    <td><a href="#" @click="edit_blog(info.id)">修改</a> <a href="#" @click="delete_blog(info.id, info.name)">删除</a></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="message_footer">
+        <pagination :page_index="page.page_index"
+                    :has_previous="page.has_previous"
+                    :has_next="page.has_next"
+                    :page_count="page.page_count"
+                    :range="range"
+                    @changeinfos="goto_Page($event)">
+        </pagination>
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block afterhead %}
+
+{( super() )}
+
+<script>
+
+    var controller = new Vue({
+        el: '#controller',
+        data: {
+            infos: [],
+            page: '',
+            images: ''
+        },
+        methods: {
+            edit_blog: function (blog_id) {
+                location.assign('/manage/blog/edit/' + blog_id);
+            },
+            delete_blog: function (blog_id, blog_name='') {
+                if (confirm('确认要删除“' + blog_name + '”？删除后不可恢复！')) {
+                    axios.get('/api/blog/del/' + blog_id)
+                        .then(location.reload())
+                        .catch(err => console.log(err));
+                }
+            },
+            goto_Page: function (new_page_index) {
+                console.log('goto_page(' + new_page_index + ')')
+                axios.get('/api/blogs/0', { params: { page: new_page_index } })
+                    .then(response => {
+                        this.infos = response.data.infos;
+                        this.page = response.data.page;
+                    })
+                    .catch(err => { console.log(err); });
+            }
+        },
+        mounted: function () {
+            axios.get('/api/blogs/0')
+                .then(response => {
+                    this.infos = response.data.infos;
+                    this.page = response.data.page;
+                    this.images = response.data.images;
+                })
+                .catch(err => { console.log(err); });
+        },
+        computed: {
+            range: function () {
+                arr = [];
+                for (let i = 0; i < this.page.page_count; i++) {
+                    arr.push(i + 1);
+                }
+                return arr;
+            }
+        }
+    });
+
+    document.getElementById("li_article").style.backgroundColor = 'rgba(255, 255, 255, 0.175)';
+
+</script>
+
+{% endblock %}

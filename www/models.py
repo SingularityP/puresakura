@@ -28,9 +28,11 @@ class User(Model): # 定义用户模型
     id = StringField(primary_key=True, default=next_id, column_type='varchar(50)') # 用户id
     email = StringField(column_type='varchar(50)') # 邮箱地址
     passwd = StringField(column_type='varchar(50)') # 密码
-    admin = BooleanField() # 管理员标识
     name = StringField(column_type='varchar(50)') # 用户名称
+    signature = StringField(column_type='varchar(50)') # 个性签名
+    admin = BooleanField() # 管理员标识
     created_at = FloatField(default=time.time) # 账号注册时间
+    login_at = FloatField(default=time.time) # 账号登录时间
 
 # 模型设计 - 博客模型
 class Blog(Model): # 定义博客模型

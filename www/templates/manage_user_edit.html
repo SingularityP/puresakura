@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+
+{% block title %}[编辑] {( user.name )}{% endblock %}
+
+{% block beforehead %}
+
+
+
+{% endblock %}
+
+{% block content %}
+
+<div id="user_editor">
+    <!-- Form editor -->
+    <div id="form_editor">
+        <form @submit.prevent="submit()">
+            <div class="field">
+                <label for="name">用户名</label>
+                <input v-model="name" type="text" placeholder="name" />
+            </div>
+            <div class="field">
+                <label for="email">邮箱</label>
+                <input v-model="email" type="text" placeholder="email" />
+            </div>
+            <div class="field">
+                <label for="signature">个性签名</label>
+                <input v-model="signature" type="text" placeholder="signature" />
+            </div>
+            <input type="submit" value="保存" class="special" />
+            <input @click="reset" type="reset" value="重置" />
+            <input @click="goBack" type="reset" value="返回" />
+        </form>
+    </div>
+    <!-- Image editor -->
+    <div id="img_editor">
+        <form id="img_form" method="post" enctype="multipart/form-data">
+            <div id="img_preview"></div>
+            <input id="img_file" type="file" @change="fileChange" />
+            <p id="img_info">{{image_information}}</p>
+        </form>
+    </div>
+
+    <div id="user_info">
+        <p v-bind:style="errored">{{user_information}}</p>
+    </div>
+
+    <div style="clear:both"></div>
+
+</div>
+
+{% endblock %}
+
+{% block afterhead %}
+
+<script src="/static/js/vue.min.js"></script>
+<script src="/static/js/axios.min.js"></script>
+<script>
+
+    // Editor
+
+    var editor = new Vue({
+        el: "#user_editor",
+        data: {
+            name: '{( user.name )}',
+            email: '{( user.email )}',
+            signature: '{( user.signature )}',
+            img_file: null,
+            image_information: '图片处理信息',
+            user_information: '用户处理信息',
+            url: '/api/user/edit/' + '{( user.id )}',
+            errored: { color: 'white' }
+        },
+        methods: {
+            fileChange: function (event) {
+                // 获取节点
+                var fileInput = document.getElementById('img_file'),
+                    preview = document.getElementById('img_preview');
+                // 清除背景图片和信息
+                preview.style.backgroundImage = '';
+                this.image_information = '';
+                // 获取图片数据
+                this.img_file = event.target.files[0];
+                console.log(this.img_file);
+                // (1) 检查文件是否选择
+                if (!img_file) {
+                    this.image_information = '没有选择图片';
+                    return;
+                }
+                // (2) 文件已选择，检查图片格式要求，获取 File 引用
+                var file = fileInput.files[0];
+                // 判断图片格式
+                if (file.type.match(/.jpg$/)) {
+                    alert('请上传 .jpg 格式的图片.');
+                    return;
+                }
+                // 判断图片大小
+                if (file.size > 1024000) {
+                    alert('上传图片的大小必须小于 1M.');
+                    return false;
+                }
+                // (3) 文件符合格式要求，获取 File 信息
+                this.image_information = "大小: " + file.size + "kb" + " 修改: " + file.lastModifiedDate;
+                // (4) 读取并上传文件
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    var data = e.target.result; // 'data:image/jpeg;base64,/9j/4AAQSk...(base64编码)...}'
+                    preview.style.backgroundImage = 'url(' + data + ')';
+                };
+                // 以 DataURL 的形式读取文件
+                reader.readAsDataURL(file);
+            },
+            submit: function (event) {
+                // 检查数据
+                if (this.name == '') {
+                    this.user_information = "用户名不能为空！";
+                    this.errored = { color: 'red' };
+                    return;
+                }
+                if (this.email == '') {
+                    this.user_information = "邮箱不能为空！";
+                    this.errored = { color: 'red' };
+                    return;
+                }
+                // 发送数据
+                let formdata = new FormData();
+                formdata.append('name', this.name);
+                formdata.append('email', this.email);
+                formdata.append('signature', this.signature);
+                formdata.append('file', this.img_file);
+                formdata.append('submit', false);
+                let config = {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
+                }
+                axios.post(this.url, formdata, config)
+                    .then(response => {
+                        this.image_information = "图片上传成功！";
+                        this.user_information = "信息保存成功！";
+                        this.errored = { color: 'white' };
+                    })
+                    .catch(err => {
+                        this.image_information = "图片上传失败！";
+                        this.user_information = err.response ? err.response.data : err.response.message;
+                        this.errored = { color: 'red' };
+                    });
+            },
+            reset: function() {
+                this.signature = "";
+                this.sort = '';
+                this.img_file = null;
+                this.image_information = "图片处理信息";
+                this.user_information = "用户处理信息";
+                this.errored = { color: 'white' };
+            },
+            goBack: function() {
+                location.assign('/manage/user');
+            }
+        }
+    });
+
+    document.getElementById('img_preview').style.backgroundImage = 'url({( images.user_path )}{( user.id )}.jpg)';
+
+</script>
+
+{% endblock %}

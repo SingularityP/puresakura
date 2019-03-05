@@ -76,13 +76,11 @@
                 <section v-else>
                     <div v-if="loading">Loading...</div>
                 </section>
-                <blog 
-                      v-for="info in infos"
+                <blog v-for="info in infos"
                       v-bind:key="info.id"
                       v-bind:info="info"
                       v-bind:images="images"
-                      >
-                </blog>
+                      ></blog>
             </article>
 
             <!-- Life -->
@@ -105,51 +103,51 @@
                 <section v-if="errored">
                     <p>We're sorry, we're not able to retrieve this information at the moment, please try back later.</p>
                 </section>
-                <div class="tools grid grid-1-4">
-                    <div class="grid-1-4">
+                <div class="tools grid grid-col-1-4">
+                    <div class="grid-col-1-4">
                         <a href="#">
-                            <div class="grid-1-2 imgmask" data-text="工具1">
+                            <div class="grid-col-1-2 imgmask" data-text="工具1">
                                 <img :src="'..' + images.tool_path + 'imgS_tool1.jpg'" alt="工具1" />
                             </div>
                         </a>
                         <a href="#">
-                            <div class="grid-1-2 imgmask" data-text="工具2">
+                            <div class="grid-col-1-2 imgmask" data-text="工具2">
                                 <img :src="'..' + images.tool_path + 'imgS_tool2.jpg'" alt="工具2" />
                             </div>
                         </a>
                     </div>
-                    <div class="grid-1-4">
+                    <div class="grid-col-1-4">
                         <a href="#">
-                            <div class="grid-1-2 imgmask" data-text="工具3">
+                            <div class="grid-col-1-2 imgmask" data-text="工具3">
                                 <img :src="'..' + images.tool_path + 'imgS_tool3.jpg'" alt="工具3" />
                             </div>
                         </a>
                         <a href="#">
-                            <div class="grid-1-2 imgmask" data-text="工具4">
+                            <div class="grid-col-1-2 imgmask" data-text="工具4">
                                 <img :src="'..' + images.tool_path + 'imgS_tool4.jpg'" alt="工具4" />
                             </div>
                         </a>
                     </div>
-                    <div class="grid-1-4">
+                    <div class="grid-col-1-4">
                         <a href="#">
-                            <div class="grid-1-2 imgmask" data-text="工具5">
+                            <div class="grid-col-1-2 imgmask" data-text="工具5">
                                 <img :src="'..' + images.tool_path + 'imgS_tool5.jpg'" alt="工具5" />
                             </div>
                         </a>
                         <a href="#">
-                            <div class="grid-1-2 imgmask" data-text="工具6">
+                            <div class="grid-col-1-2 imgmask" data-text="工具6">
                                 <img :src="'..' + images.tool_path + 'imgS_tool6.jpg'" alt="工具6" />
                             </div>
                         </a>
                     </div>
-                    <div class="grid-1-4">
+                    <div class="grid-col-1-4">
                         <a href="#">
-                            <div class="grid-1-2 imgmask" data-text="工具7">
+                            <div class="grid-col-1-2 imgmask" data-text="工具7">
                                 <img :src="'..' + images.tool_path + 'imgS_tool7.jpg'" alt="工具7" />
                             </div>
                         </a>
                         <a href="#">
-                            <div class="grid-1-2 imgmask" data-text="工具8">
+                            <div class="grid-col-1-2 imgmask" data-text="工具8">
                                 <img :src="'..' + images.tool_path + 'imgS_tool8.jpg'" alt="工具8" />
                             </div>
                         </a>
@@ -233,45 +231,10 @@
     <script src="../static/js/vue.min.js"></script>
     <script src="../static/js/axios.min.js"></script>
     <script src="../static/js/sha1.min.js"></script>
+    <script src="../static/js/main2.js"></script>
     <script type="text/javascript">
 
         // script for "tech" and "life" part blogs initializion.
-
-        Vue.filter('datetime_filter', function (value) {
-            delta = new Date().getTime() - value*1000;
-            if (delta < 60) {
-                return '1 seconds ago';
-            }
-            if (delta < 3600) {
-                return Math.round(delta / 60) + 'minutes ago';
-            }
-            if (delta < 86400) {
-                return Math.round(delta / 3600) + 'hous ago';
-            }
-            if (delta < 604800) {
-                return Math.round(delta / 86400) + 'days ago';
-            }
-            dt = new Date(value*1000);
-            return dt.getFullYear() + '-' + (dt.getMonth() + 1) + '-' + dt.getDate();
-        });
-
-        Vue.component('blog', {
-            props: ['info', 'images'],
-            template: `
-                <div class="blogs">
-                    <h3 class="title"><a :href="'/blog/'+info.id">{{ info.name }}</a></h3>
-                    <div class="meta">
-                        <i class="icon fa-user"></i> {{ info.user_name }} &nbsp;
-                        <i class="icon fa-calendar"></i> {{ info.created_at | datetime_filter }} &nbsp;
-                        <i class="icon fa-eye"></i> {{ info.readers }} &nbsp;
-                    </div>
-                    <div class="clear"></div>
-                    <a :href="'/blog/'+info.id"><img :src="'..' + images.blog_path + 'imgS_' + info.id + '.jpg'" alt="图片被吞掉了！"/></a>
-                    <p class="summary" style="padding: 0.25rem 0 0 0;">{{ info.summary }}</p>
-                    <div class="clear"></div>
-                </div>
-            `
-        });
 
         var tech = new Vue({
             el: '#tech',
@@ -324,11 +287,6 @@
         })
 
         // script for user register.
-
-        function validateEmail(email) {
-            var re = /^[a-z0-9\.\-\_]+@[a-z0-9\-\_]+(\.[a-z0-9\-\_]+){1,4}$/;
-            return re.test(email.toLowerCase());
-        }
 
         var reg = new Vue({
             el: '#register',

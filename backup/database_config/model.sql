@@ -8,9 +8,11 @@ CREATE TABLE users(
     `id` varchar(50) not null,
     `email` varchar(50) not null,
     `passwd` varchar(50) not null,
+	`name` nvarchar(50) not null,
+    `signature` nvarchar(50),
     `admin` bool not null,
-    `name` varchar(50) not null,
     `created_at` real not null,
+    `login_at` real not null,
 	UNIQUE KEY `idx_email` (`email`),
 	KEY `idx_created_at` (`created_at`),
 	PRIMARY KEY (`id`)

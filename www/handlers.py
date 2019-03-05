@@ -16,8 +16,8 @@ import json, time, hashlib, re, os, logging
 logging.basicConfig(level=logging.DEBUG)
 
 # 1 首页相关逻辑
-# 1.1 页面请求
-# 1.1.1 获取首页 index.html
+## 1.1 页面请求
+### 1.1.1 获取首页 index.html
 @get('/')
 async def index(request):
     logging.debug('[HANDLER] Handlering index.html ...')
@@ -25,8 +25,8 @@ async def index(request):
             '__template__' : 'index.html', # 'template__'参数指定的模板文件是'test.html'，其他参数是传递给模板的数据
             }
 
-# 1.2 API 请求
-# 1.2.1 获取博客列表数据 
+## 1.2 API 请求
+### 1.2.1 获取博客列表数据 
 def get_page_index(page_str): # 将页码字符串转换为整型
     logging.debug('[HANDLER]     Handlering /api/blogs, the page_str(no convert) is: ' + page_str)
     p = 1
@@ -39,7 +39,7 @@ def get_page_index(page_str): # 将页码字符串转换为整型
         p = 1
     return p
     
-@get('/api/blogs/{sort}') # 获取博客的简单列表，可定制
+@get('/api/blogs/{sort}') # 获取博客列表，可定制
 async def getBlogs(*, sort='0', page='1'):
     logging.debug('[HANDLER] Handlering /api/blogs/{sort} in index.html ...')
     where_sql = None
@@ -66,11 +66,20 @@ async def getBlogs(*, sort='0', page='1'):
             }
 
 # 2 用户管理相关逻辑
-# 2.1 页面请求
-# 2.1.1 
+## 2.1 页面请求
+### 2.1.1 获取用户修改页面
+@get('/manage/user/edit/{id}')
+async def getUserEdit(id):
+    logging.debug('[HANDLER] Handlering (edit) manage_user_edit.html ...')
+    user = await User.find(id)
+    return {
+            '__template__': 'manage_user_edit.html',
+            'user': user,
+            'images' : configs.images
+            }
 
-# 2.2 API 请求
-# 2.2.1 用户注册逻辑
+## 2.2 API 请求
+### 2.2.1 用户注册逻辑
 COOKIE_NAME = 'sakurasession' # Cookie 名称
 _COOKIE_KEY = configs.session.secret # Cookie 盐
 _RE_EMAIL = re.compile(r'^[a-z0-9\.\-\_]+\@[a-z0-9\-\_]+(\.[a-z0-9\-\_]+){1,4}$') # 邮箱正则模式
@@ -132,7 +141,7 @@ async def api_register_user(*, email, name, passwd):
     r.body = json.dumps(user, ensure_ascii=False).encode('utf-8')
     return r
 
-# 2.2.2 用户登录逻辑
+### 2.2.2 用户登录逻辑
 @post('/api/signin') # 验证用户
 async def authenticate(*, email, passwd):
     logging.debug('[HANDLER] Handlering /api/signin in index.html ...')
@@ -159,7 +168,7 @@ async def authenticate(*, email, passwd):
     r.body = json.dumps(user, ensure_ascii=False).encode('utf-8')
     return r
 
-# 2.2.3 用户登出逻辑
+### 2.2.3 用户登出逻辑
 @get('/api/signout') #（会跳转到其他页面）
 async def signout(request):
     logging.debug('[HANDLERS] Handlering /aip/signout in index.html ...')
@@ -168,27 +177,75 @@ async def signout(request):
     r.set_cookie(COOKIE_NAME, '-deleted-', max_age=0, httponly=True) # 删除 Cookie
     return r
 
+### 2.2.4 获取用户列表数据
+@get('/api/users/{sort}') # 获取用户列表，可定制
+async def getUsers(*, sort='0', page='1'):
+    logging.debug('[HANDLER] Handlering /api/users/{sort} in base_manage.html ...')
+    where_sql = None
+    limit_sql = 10
+    items_sql = ['name', 'email', 'signature', 'created_at', 'login_at', 'admin']
+    if sort != '0': # 全选时
+        where_sql="sort=" + sort # 构造类别条件
+        page = None # 不用页码对象
+    else: # 按类别选取时，构造页码对象，并设置 limit 和 items
+        page_index = get_page_index(page)
+        logging.debug('[HANDLER]     Handlering /api/users/{sort}, the page_index is: ' + str(page_index))
+        num = await User.findNumber('count(id)') # 获取条目总数
+        page = Page(num, page_index, 10)
+        if num == 0: # 处理无条目的情况
+            logging.warning('[HANDLER]     No data! Database is empty!')
+            return dict(page=page, blogs=())
+        limit_sql=(page.offset, page.limit)
+    infos = await User.findAll(where=where_sql, limit=limit_sql, orderBy='created_at desc', items=items_sql)
+    return {
+            'infos': infos, # 博客数据，不带有模板，在 app.py 内的 ResponseFactory 内会自动转换为 json
+            'page': page,
+            'images': configs.images
+            }
+
+### 2.2.5 修改用户数据
+@post('/api/user/edit/{id}')
+async def editUserData(id, request, *, name, email, signature, file):
+    logging.debug('[HANDLERS] Handlering /aip/user/edit/{id} in manage_user_edit.html ...')
+    check_admin(request) # 检查是否是管理员
+    user = await User.find(id) # 查找要修改的日志数据
+    if not name or not name.strip(): # 如果没有名字
+        raise APIValueError('name', 'name cannot be empty.')
+    if not email or not email.strip(): # 如果没有标题
+        raise APIValueError('summary', 'summary cannot be empty.')
+    if signature is None or signature == 'undefined': # 如果没有内容
+        signature = ''
+    user.name = name.strip()
+    user.email = email.strip()
+    user.signature = signature.strip()
+    logging.debug('[HANDLERS]     Update user before save image.')
+    await user.update() # 更新数据库
+    # 存储图片
+    logging.debug('[HANDLERS]     Type of variable file: ' + str(type(file)))
+    if not (isinstance(file,str) or file==None):
+        img_name = user.id + '.jpg'
+        img_data = file.file
+        await saveImage(img_name, img_data, 'user')
+    return user
+    
+### 2.2.6 删除用户数据
+    
+
 # 3 博客相关逻辑
-# 3.1 页面请求
+## 3.1 页面请求
 ### 3.1.1 获取博客页 blog.html
 @get('/blog/{id}')
 async def getBlog(id):
     logging.debug('[HANDLER] Handlering blog.html ...')
     blog = await Blog.find(id)
-    '''
-    comments = await Comment.findAll('blog_id=?', [id], orderBy='created_at desc')
-    for comment in comments:
-         comment.replies = await Reply.findAll('target_cmid=?', comment.id, orderBy='created_at desc', items=['user_name', 'user_id', 'target_name', 'content', 'created_at'])
-    '''
     blog.readers += 1
     await blog.update()
     return {
             '__template__': 'blog.html',
-            'blog_name': blog.name,
-            'blog_id': blog.id,
             'blog': blog,
+            'images' : configs.images
             }
-    
+
 ### 3.1.2 获取博客创建页 manage_blog_edit.html
 @get('/manage/blog/new')
 async def getBlogNew():
@@ -197,7 +254,6 @@ async def getBlogNew():
             '__template__': 'manage_blog_edit.html',
             'blog_name': '新建',
             'blog_id': '',
-            'images' : configs.images,
             'isNew': True
             }
 
@@ -215,8 +271,8 @@ async def getBlogEdit(id):
             'isNew': False
             }
 
-# 3.2 API 请求
-# 3.2.1 博客评论数据传输
+## 3.2 API 请求
+### 3.2.1 博客数据（评论、回复）传输
 @get('/api/blog/{id}')
 async def getBlogData(id):
     logging.debug('[HANDLERS] Handlering /aip/blog/{id} in index.html ...')
@@ -224,8 +280,8 @@ async def getBlogData(id):
     for comment in comments:
          comment.replies = await Reply.findAll('target_cmid=?', comment.id, orderBy='created_at desc', items=['user_name', 'user_id', 'target_name', 'content', 'created_at'])
     return {
-            'comment_data': comments,
-            'images' : configs.images
+            'comments': comments,
+            'images': configs.images
             }
     
 ### 3.2.2 新增博客数据
@@ -262,7 +318,7 @@ async def saveImage(img_name=None, img_data=None, target='base'): # 存储图片
             for line in img_data:
                 fileWriter.write(line)
         if target == 'blog':
-            logging.debug("[HANDLERS]     Create a small version of the image.")
+            logging.debug("[HANDLERS]     Create a small version of the blog image.")
             zoom(img_path, img_name, (192, 108))
     except OSError as e:
         logging.warn('[HANDLERS]     Image writing error: ' + repr(e))
@@ -283,7 +339,7 @@ async def createBlogData(request, *, name, summary, content, sort, file):
     if not content or not content.strip(): # 如果没有内容
         raise APIValueError('content', 'content cannot be empty.')
     # 创建博客
-    blog = Blog(id = next_id(), user_id=request.__user__.id, user_name=request.__user__.name, name=name.strip(), summary=summary.strip(), content=content, sort=sort)
+    blog = Blog(id=next_id(), user_id=request.__user__.id, user_name=request.__user__.name, name=name.strip(), summary=summary.strip(), content=content.strip(), sort=sort)
     logging.debug('[HANDLERS]     Update blog before save image.')
     await blog.save()
     # 存储图片
@@ -315,10 +371,10 @@ async def saveMdImage(**kw):
                 'url': ''
                 }
         
-# 3.2.3 修改博客数据
+### 3.2.3 修改博客数据
 @post('/api/blog/edit/{id}')
 async def editBlogData(id, request, *, name, summary, content, sort, file):
-    logging.debug('[HANDLERS] Handlering /aip/blog/edit/{id} in manage_article.html ...')
+    logging.debug('[HANDLERS] Handlering /aip/blog/edit/{id} in manage_blog_edit.html ...')
     check_admin(request) # 检查是否是管理员
     blog = await Blog.find(id) # 查找要修改的日志数据
     if not name or not name.strip(): # 如果没有名字
@@ -341,10 +397,10 @@ async def editBlogData(id, request, *, name, summary, content, sort, file):
         await saveImage(img_name, img_data, 'blog')
     return blog
 
-# 3.2.4 删除博客数据
+### 3.2.4 删除博客数据
 @get('/api/blog/del/{id}')
-async def delBlogData(request, *, id):
-    logging.debug('[HANDLERS] Handlering /aip/blog/del/{id} in manage_article.html ...')
+async def delBlogData(id, request):
+    logging.debug('[HANDLERS] Handlering /aip/blog/del/{id} in manage_blog.html ...')
     check_admin(request) # 检查是否是管理员
     comments = await Comment.findAll('blog_id=?', [id], orderBy='created_at desc')
     for comment in comments:
@@ -359,13 +415,37 @@ async def delBlogData(request, *, id):
     await blog.delete() # 删除该日志
     return dict(id=id) # 返回被删除的日志id
 
+### 3.2.5 新增评论
+@post('/api/comment/new/{blog_id}')
+async def createCommentData(request, *, blog_id, content):
+    logging.debug('[HANDLERS] Handlering /aip/comment/new/{blog_id} in blog.html ...')
+    check_user(request)
+    if not content or not content.strip():
+        raise APIValueError('content', 'content cannot be empty.')
+    # 创建评论
+    comment = Comment(id=next_id(), user_id=request.__user__.id, user_name=request.__user__.name, blog_id=blog_id, content=content.strip())
+    await comment.save()
+    return comment
+
+### 3.2.6 新增回复
+@post('/api/reply/new/{target_cmid}')
+async def createReplyData(request, *, target_cmid, target_name, content):
+    logging.debug('[HANDLERS] Handlering /aip/reply/new/{cm_id} in blog.html ...')
+    check_user(request)
+    if not content or not content.strip():
+        raise APIValueError('content', 'content cannot be empty.')
+    # 创建回复
+    reply = Reply(id=next_id(), user_id=request.__user__.id, user_name=request.__user__.name, target_cmid=target_cmid, target_name=target_name, content=content.strip())
+    await reply.save()
+    return reply
+
 # 4 工具相关逻辑
     
 ## 4.1 基本方法
 ### 4.1.1 页面获取
 @get('/tool') # 工具页面获取
 async def tool():
-    logging.debug('[HANDLER] Handlering ??.html(now is undefined) ...')
+    logging.debug('[HANDLER] Handlering ??.html (now is undefined) ...')
     return {
             'images': configs.images
             }
@@ -373,24 +453,40 @@ async def tool():
 
 # 5 后台管理相关
 ## 5.1 页面请求
-### 5.1.1 获取后台管理页 manage.html
+### 5.1.1 获取后台报告页 manage_report.html
 @get('/manage/report')
-async def manage_report():
+async def manage_report(request):
     logging.debug('[HANDLER] Handlering manage_report.html ...')
-    article_num = await Blog.count(item_count=[('id', '_num_')], alias=True)
+    check_admin(request) # 检查是否是管理员
+    blog_num = await Blog.count(item_count=[('id', '_num_')], alias=True)
     return {
-            'article_num': article_num[0]['_num_'],
+            'blog_num': blog_num[0]['_num_'],
             '__template__': 'manage_report.html'
             }
 
-@get('/manage/article')
-async def manage_article():
-    logging.debug('[HANDLER] Handlering manage_article.html ...')
+### 5.1.2 获取后台博客页 manage_blog.html
+@get('/manage/blog')
+async def manage_blog(request):
+    logging.debug('[HANDLER] Handlering manage_blog.html ...')
+    check_admin(request) # 检查是否是管理员
     return {
-            '__template__': 'manage_article.html'
+            '__template__': 'manage_blog.html'
+            }
+
+### 5.1.3 获取后台用户页 manage_user.html    
+@get('/manage/user')
+async def manage_user(request):
+    logging.debug('[HANDLER] Handlering manage_user.html ...')
+    check_admin(request) # 检查是否是管理员
+    return {
+            '__template__': 'manage_user.html'
             }
     
 ## 5.2 API 请求
 def check_admin(request):  # 验证管理员身份
     if request.__user__ is None or not request.__user__.admin:
-        raise APIPermissionError()
+        raise APIPermissionError('admin', 'you are not manager')
+        
+def check_user(request): # 验证用户身份
+    if request.__user__ is None:
+        raise APIPermissionError('user', 'please login in')

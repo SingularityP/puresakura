@@ -702,6 +702,13 @@ body.is-loading #footer {
         line-height: 1.5rem;
     }
 
+    @media screen and (max-width:480px)
+    {
+        .blogs img {
+            width: 38%;
+        }
+    }
+
 /* Tool */
     #tool a {
         border-bottom: none;

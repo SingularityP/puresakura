@@ -1,158 +1,8 @@
-﻿{% extends 'base.html' %}
+{% extends 'base.html' %}
 
 {% block title %}管理系统{% endblock %}
 
-{% block beforehead %}
-<style>
-
-    /* Basic */
-    .active {
-    }
-
-    .divider {
-        border-bottom: solid 1px rgba(221, 221, 221, 0.3);
-        margin: 0.5rem 0;
-    }
-
-    /* Navigation general format */
-    .nav {
-        list-style-type: none;
-        margin: 0;
-        padding: 0;
-        overflow: hidden;
-        font-size: 0.8rem;
-    }
-
-    /* Navigation Bar */
-    .navbar {
-        position: fixed;
-        top: 0;
-        width: 100%;
-        max-width: 100%;
-        border-radius: 5px;
-        background-color: rgba(0, 0, 0, 0.25);
-    }
-
-    .navbar a {
-        border-bottom: none;
-    }
-
-        /* Left part in Navigation Bar */
-        .navbar-header {
-            float: left;
-            padding: 0.25rem 0.5rem 0.15rem 1rem;
-            font-size: larger;
-        }
-
-        /* Right part in Navigation Bar */
-        .navbar-collapse {
-            padding: 0.25rem 0.5rem 0.15rem 1rem;
-        }
-
-        .navbar-collapse ul li {
-            -moz-transition: background-color 0.2s ease-in-out;
-            -webkit-transition: background-color 0.2s ease-in-out;
-            -ms-transition: background-color 0.2s ease-in-out;
-            transition: background-color 0.2s ease-in-out;
-            float: right;
-            margin: 0.25rem;
-            padding: 0.15rem 0.5rem 0.15rem 0.5rem;
-            border-radius: 5px;
-        }
-
-        .navbar-collapse ul li:hover {
-            background-color: rgba(255, 255, 255, 0.175)
-        }
-
-            /* Dropdown in list item */
-
-            .dropdown {
-            }
-
-            .dropdown .dropdown-menu {
-                -moz-transition: opacity 0.2s ease-in-out;
-                -webkit-transition: opacity 0.2s ease-in-out;
-                -ms-transition: opacity 0.2s ease-in-out;
-                transition: opacity 0.2s ease-in-out;
-                position: absolute;
-                display: none;
-                opacity: 0;
-                box-sizing: border-box;
-            }
-
-            .dropdown:hover .dropdown-menu {
-                margin: 0.55rem 0 0 -0.5rem;
-                border-radius: 5px;
-                background-color: rgba(0, 0, 0, 0.3);
-                display: block;
-                opacity: 1;
-            }
-
-            .dropdown .dropdown-menu li {
-                float: none;
-            }
-
-    /* Side Bar */
-
-    /* Side Bar general format */
-    .sidebar {
-        position: fixed;
-        top: 2.55rem;
-        bottom: 0;
-        left: 0;
-        z-index: 1000;
-        display: block;
-        padding: 20px;
-        overflow-x: hidden;
-        overflow-y: auto;
-        background-color: rgba(0, 0, 0, 0.25);
-    }
-
-    .sidebar {
-        font-size: 0.8rem;
-        color: #ddd;
-    }
-
-        .sidebar a {
-            border-bottom: none;
-        }
-
-        /* Navigation in Side Bar */
-        .nav-sidebar {
-            margin: 0 0 0.5rem 0;
-        }
-
-        .nav-sidebar li {
-            -moz-transition: background-color 0.2s ease-in-out;
-            -webkit-transition: background-color 0.2s ease-in-out;
-            -ms-transition: background-color 0.2s ease-in-out;
-            transition: background-color 0.2s ease-in-out;
-            border-radius: 5px;
-            margin: 0.25rem 0 0.25rem 0rem;
-            padding: 0.05rem 0.5rem 0.05rem 0.5rem;
-        }
-
-        .nav-sidebar li:hover {
-            background-color: rgba(255, 255, 255, 0.175)
-        }
-
-            /* Dropdown in list item */
-            .nav-dropdown {
-                -moz-transition: opacity 0.2s ease-in-out, height 0.2s ease-in-out;
-                -webkit-transition: opacity 0.2s ease-in-out, height 0.2s ease-in-out;
-                -ms-transition: opacity 0.2s ease-in-out, height 0.2s ease-in-out;
-                transition: opacity 0.2s ease-in-out, height 0.2s ease-in-out;
-                opacity: 0;
-                height: 0;
-            }
-
-            .dropdown:hover .nav-dropdown {
-                opacity: 1;
-                height: auto;
-            }
-
-</style>
-{% endblock %}
+{% block beforehead %}{% endblock %}
 
 {% block content %}
 
@@ -180,8 +30,8 @@
         <li id="li_report" class="active"><a href="/manage/report">报告</a></li>
     </ul>
     <ul class="nav nav-sidebar">
-        <li id="li_article"><a href="/manage/article">文章</a></li>
-        <li id="li_anounce"><a href="#">公告</a></li>
+        <li id="li_user"><a href="/manage/user">用户</a></li>
+        <li id="li_article"><a href="/manage/blog">文章</a></li>
         <li id="li_comment"><a href="#">评论</a></li>
         <li id="li_discuss"><a data-toggle="tooltip" title="网站暂无留言功能">留言</a></li>
     </ul>
@@ -226,6 +76,7 @@
 
 <script src="../static/js/vue.min.js"></script>
 <script src="../static/js/axios.min.js"></script>
+<script src="../static/js/main2.js"></script>
 <script>
 
     var status = new Vue({

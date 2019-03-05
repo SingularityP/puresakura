@@ -94,7 +94,7 @@ async def auth_factory(app, handler):
         if cookie_str: # 获取到cookie值
             user = await cookie2user(cookie_str) # 解析cookie
             if user: # 如果解析成功
-                logging.info('[APP] Set current user: %s' % user.email) # 记录日志
+                logging.info('[APP] Set current user: %s %s' % (user.name, user.email)) # 记录日志
                 request.__user__ = user # 通过
         if request.path.startswith('/manage/') and (request.__user__ is None or not request.__user__.admin):
             return web.HTTPFound('/signin') # 重新登录

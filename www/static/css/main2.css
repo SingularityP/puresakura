@@ -940,12 +940,20 @@
             display: grid;
         }
 
-        .grid-1-4 {
+        .grid-col-1-4 {
             grid-template-columns: 25% 25% 25% 25%;
         }
 
-        .grid-1-2 {
+        .grid-col-1-2 {
             grid-template-columns: 50% 50%;
+        }
+
+        .grid-row-1-4 {
+            grid-template-rows: 25% 25% 25% 25%;
+        }
+
+        .grid-row-1-2 {
+            grid-template-rows: 50% 50%;
         }
 
         /* relation */
@@ -973,4 +981,11 @@
         .breadcumb li {
             float: left;
             margin: 0 0 0.5rem 0.5rem;
+        }
+
+    /* Divider */
+
+        .divider {
+            border-bottom: solid 1px rgba(221, 221, 221, 0.3);
+            margin: 0.5rem 0;
         }
