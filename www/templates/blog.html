@@ -11,7 +11,7 @@
 
 <div id="re_editor">
 
-    <div id="md_editor" :style="md_style">
+    <div id="md_editor" class="editormd-preview-theme-dark" :style="md_style">
         <textarea>{(blog.content|safe)}</textarea>
     </div>
 
@@ -118,6 +118,11 @@
                 .catch(function (err) {
                     console.log(err);
                 });
+
+			editormd.katexURL = {
+				js  : "//cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.1/katex.min",  // default: //cdnjs.cloudflare.com/ajax/libs/KaTeX/0.3.0/katex.min
+				css : "//cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.1/katex.min"   // default: //cdnjs.cloudflare.com/ajax/libs/KaTeX/0.3.0/katex.min
+			};
 
             editormd.markdownToHTML("md_editor", {
                 htmlDecode: "style,script,iframe",  // you can filter tags decode
