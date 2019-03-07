@@ -21,8 +21,6 @@ if (typeof (Vue !== 'undefined')) {
             return Math.round(delta / 3600) + ' hous ago';
         }
         if (delta < 604800) {
-            console.log(value);
-            console.log(delta);
             return Math.round(delta / 86400) + ' days ago';
         }
         dt = new Date(value * 1000);
@@ -63,9 +61,17 @@ if (typeof (Vue !== 'undefined')) {
 
     Vue.component('incomment', {
         props: ['reply', 'images'],
+		data() {
+			return {
+				user_img: '/static/images/user.jpg'
+			}
+		},
+		mounted: function () {
+			this.user_img = this.images.user_path + this.reply.user_id + '.jpg';
+		},
         template: `
                 <div class="in_comment">
-                    <img class="in_user_img" :src="images.user_path + reply.user_id + '.jpg'" />
+                    <img class="in_user_img" :src="this.user_img" @error="user_img='/static/images/user.jpg'" />
                     <div class="user_info">
                         {{reply.user_name}}
                     </div>
@@ -80,12 +86,13 @@ if (typeof (Vue !== 'undefined')) {
     });
     
     Vue.component('outcomment', {
-        props: ['comment', 'images'],
+        props: ['comment', 'images', 'id_img'],
         data() {
             return {
                 content: '',
                 name: '',
                 in_visible: {display: 'none'},
+				user_img: '/static/images/user.jpg',
             }
         },
         methods: {
@@ -108,9 +115,12 @@ if (typeof (Vue !== 'undefined')) {
                     .catch(err => console.log(err));
             }
         },
+		mounted: function() {
+			this.user_img = this.images.user_path + this.comment.user_id + '.jpg';
+		},
         template: `
                 <div class="out_comment">
-                    <img class="user_img" :src="images.user_path + comment.user_id + '.jpg'" />
+                    <img class="user_img" :src="this.user_img" @error.once="user_img='/static/images/user.jpg'" />
                     <div class="user_info">
                         {{comment.user_name}}
                     </div>
@@ -127,7 +137,7 @@ if (typeof (Vue !== 'undefined')) {
                                 v-bind:images="images"
                                 ></incomment>
                     <form class="user_form" v-bind:style="in_visible" @submit.prevent="submit">
-                        <img class="user_img" :src="images.user_path + comment.user_id + '.jpg'" />
+                        <img class="user_img" :src="id_img" />
                         <textarea v-model="content"></textarea>
                         <input type="submit" value="回复" />
                     </form>

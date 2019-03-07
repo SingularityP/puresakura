@@ -50,7 +50,11 @@
         <p v-bind:style="errored">{{blog_information}}</p>
     </div>
 
-    <div id="temp" style="display:none;">{(blog.content | safe)}</div>
+    <div id="temp" style="display:none;">
+	{% if not isNew %}
+		{(blog.content | safe)}
+	{% endif %}
+	</div>
 
 </div>
 
@@ -233,9 +237,8 @@
 
     {% if not isNew %}
         document.getElementById('img_preview').style.backgroundImage = 'url({( images.blog_path )}{( blog_id )}.jpg)';
-        document.getElementById('md_editor').style.opacity = 1;
     {% endif %}
-
+		document.getElementById('md_editor').style.opacity = 1;
 </script>
 
 {% endblock %}

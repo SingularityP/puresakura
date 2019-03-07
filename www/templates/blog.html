@@ -23,7 +23,7 @@
         <hr class="divider" />
 
         <form id="reply" @submit.prevent="submit()">
-            <img class="user_img" :src="user_img" />
+            <img class="user_img" :src="user_img" @error.once="user_img='/static/images/user.jpg'"/>
             <textarea v-model="content"></textarea>
             <input type="submit" value="回复" />
         </form>
@@ -35,6 +35,7 @@
                         v-bind:key="comment.id"
                         v-bind:comment="comment"
                         v-bind:images="images"
+						v-bind:id_img="user_img"
                         ></outcomment>
         </div>
 
@@ -79,7 +80,7 @@
             comments: '',
             images: '',
             opacity: '0',
-            user_img: '',
+            user_img: '/static/images/user.jpg',
         },
         computed: {
             md_style: function () {
