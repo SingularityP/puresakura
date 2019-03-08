@@ -351,10 +351,12 @@ async def createBlogData(request, *, name, summary, content, sort, file):
     return blog
 
 @post('/api/blog/img') ### 存储 markdown 图片数据
-async def saveMdImage(**kw):
+async def saveMdImage(request, **kw):
     logging.debug('[HANDLERS] Handlering /aip/blog/img in manage_blog_edit.html ...')
-    img_name = next_id() + '.jpg' # 图片名
-    img_data = kw.get('editormd-image-file').file # 图片数据
+    check_admin(request) # 检查是否是管理员
+    files = kw.get('editormd-image-file')
+    img_data = files.file # 图片数据
+    img_name = next_id() + os.path.splitext(files.filename)[1] # 图片名
     if img_data is None:
         raise APIValueError('imgdata', 'Image data can not be empty.')
     status = await saveImage(img_name, img_data, 'art')
