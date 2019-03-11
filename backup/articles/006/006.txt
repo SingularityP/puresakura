@@ -1,0 +1,5 @@
+【Python】Pandas 十分钟
+
+用 Python 进行数据处理，就离不开 NumPy 和 Pandas。之前上手了 NumPy，接下来就是 Pandas 了。本来想继续学习 @teadocs 的 Pandas 中文文档，无奈作者还没有将官方文档翻译，于是决定直接学习 Pandas 的官方文档。本文是对 Pandas 官方文档中 “10 Minutes to pandas” 一文的理解和归纳，其中出现的例子大多来自原文，文章的概念是基于个人的理解，难免会与官方文档的有出入，还请海涵。
+
+pandas_fast.md

@@ -4,6 +4,16 @@
 
 {% block beforehead %}
 <link rel="stylesheet" href="../static/css/editormd.min.css" type="text/css" />
+<style>
+	
+	.editormd-html-preview code {
+		border: none;
+		background: rgba(255, 255, 255, 0.075);
+		margin: 0;
+		padding: 1.5px 0;
+	}
+	
+</style>
 {% endblock %}
 
 {% block content %}
@@ -85,8 +95,8 @@
         computed: {
             md_style: function () {
                 return {
+					color: 'white',
                     'background-color': "rgba(27, 31, 34, 0.85)",
-                    color: 'white',
                     padding: '4.5rem 2.5rem 1.5rem 2.5rem',
                     font: 'inherit',
                     'box-sizing': 'border-box',
