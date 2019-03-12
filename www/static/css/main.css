@@ -673,7 +673,17 @@ body.is-loading #footer {
 
     .blogs h3 {
         float: left;
+		color: powderblue;
+		-moz-transition: margin-left 0.2s ease-in-out, color 0.1s ease-in-out;
+        -webkit-transition: margin-left 0.2s ease-in-out, color 0.1s ease-in-out;
+        -ms-transition: margin-left 0.2s ease-in-out, color 0.1s ease-in-out;
+        transition: margin-left 0.2s ease-in-out, color 0.1s ease-in-out;
     }
+	
+		.blogs h3:hover {
+			color: lightskyblue;
+			margin-left: 1rem;
+		}
 
     .blogs .meta {
         float: right;
@@ -699,7 +709,7 @@ body.is-loading #footer {
         }
 
     .blogs p {
-        line-height: 1.5rem;
+		font-size: large;
     }
 
     @media screen and (max-width:480px)

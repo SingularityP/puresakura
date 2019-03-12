@@ -1,9 +1,9 @@
 【神经网络】单层感知器
 
-
+本文主要介绍单层感知器，并在此基础上适当拓展介绍多层感知器及其深入理解。感知器是人工神经网络中的一种典型结构，它的主要的特点是结构简单，对所能解决的问题 存在着收敛算法，并能从数学上严格证明，从而对神经网络研究起了重要的推动作用。单层感知器能够解决线性可分问题，单隐层感知器能够解决线性不可分问题，双隐层感知器能够解决任意复杂的分类问题。本文是学习韩力群所著《人工神经网络理论、设计及应用》一书后的笔记型文章，部分概念的理解难免会与书本原意有偏差，还清海涵。
 
 # 2 单层感知器
-##2.1 模型建立
+##2.1 感知器模型
 **感知器神经网络**是一种典型的有监督前馈神经网络，具有分层结构。**单层感知器**是指一个只有一层处理单元的感知器（如果包括输入层在内，应为两层），其输出取值是离散的，故也称为**离散型单计算层感知器**，一般说的**感知器（Perceptron）**就是指这种，其他各种类型的感知器都是在此模型基础上发展出来的。
 
 感知器的**拓补结构**如图 2.1 所示。
@@ -14,24 +14,25 @@
 
 两层之间的连接权值用矩阵表示：$$W=[W\_1,W\_2,\cdots,W\_j,\cdots,W\_m]$$，其中$$W\_j=(w\_{1j},w\_{2j},\cdots,w\_{ij},\cdots,w\_{nj})^T$$
 
-<div align="center">[](/static/images/img_art/0015519410985582677871c5aa443e6bf989830b35a863e000.jpg)
-图2.1 单层感知器网络拓补图
+<div align="center">![](/static/images/img_art/0015519410985582677871c5aa443e6bf989830b35a863e000.jpg)
+图2.1 单层感知器(单计算节点)网络拓补图
+
 </div>
 
 感知器的**转移函数**一般为符号函数（或单极性阈值函数）：
 
-$$\displaystyle o\_j=sgn(net\_j^{\`}-T\_j)=sgn(\sum\_{i=0}^{n}w\_{ij}x\_i)=sgn(W\_j^TX)$$
+$$\displaystyle o\_j=\text{sgn}(net\_j^{\`}-T\_j)=\text{sgn}(\sum\_{i=0}^{n}w\_{ij}x\_i)=\text{sgn}(W\_j^TX)$$
 
 感知器模型使用二进制神经元，当采用符号函数作为转移函数后，就可以使用第1节“基础的三大要素”中提到的感知器**学习规则**（当然也可以用其他学习规则）：
 
-$$r[W\_j(t),X(t),d\_j(t)]=d\_j-sgn(W\_j^TX)$$
+$$r[W\_j(t),X(t),d\_j(t)]=d\_j-\text{sgn}(W\_j^TX)$$
 
-##2.2 功能分析
-###2.2.1 线性分类功能
+##2.2 线性分类功能
 先考虑**只有一个计算节点**的感知器，如图 2.2(1) 所示，图中的输入样本是**二维**的。
 
-<div align="center">[](/static/images/img_art/001552029653497461873db57b94b829d249c4e0e85173a000.png)
+<div align="center">![](/static/images/img_art/001552029653497461873db57b94b829d249c4e0e85173a000.png)
 图2.2 二维输入单计算节点感知器
+
 </div>
 
 当输入向量为二维情形时，即
@@ -59,7 +60,7 @@ $$W\_1^TX = w\_{11}x\_1+w\_{21}x\_2-T\_1=0$$
 
 **拓展 1：$$n$$维输入**
 
-将二维输入拓展到一般$$n$$为输入
+将二维输入拓展到一般的$$n$$维输入
 
 $$X=(x\_1,x\_2,\cdots,x\_n)^T$$
 
@@ -88,8 +89,183 @@ $$W\_j^TX=0, \;\; j\in \\{ 1 \\}$$
 
 这里要特别注意加粗字，即感知器只能对线性可分类别进行分类，在最后的小节会解释这个问题。
 
-<div align="center">[](/static/images/img_art/001552032863212ecfc1c41218f4df6ba6b4a955967e3c9000.png)
+<div align="center">![](/static/images/img_art/001552032863212ecfc1c41218f4df6ba6b4a955967e3c9000.png)
 图2.3 单层感知器(多计算节点)网络拓补图
+
 </div>
 
-##2.3 算法设计
+##2.3 学习算法设计
+
+感知器的训练过程是权值随每一步调整改变的过程，为此用$$t$$表示学习步的序号，权值看做$$t$$的函数。
+
+训练算法描述如下：
+
+> (1) 数据初始化
+> &nbsp; &nbsp; &nbsp; &nbsp; 设定好阈值$$T=(t\_0,t\_1,\cdots,t\_m)$$（$$m$$为计算层的节点数）、学习率$$\eta \in (0,1)$$。
+> &nbsp; &nbsp; &nbsp; &nbsp; 对各个权值 $$w\_{0j}, w\_{1j}, \cdots, w\_{nj}, \;\; j=1,2, \cdots, m$$（$$n$$为输入数据维数）赋予较小的非零随机数。得到
+```katex
+W = \begin{bmatrix}
+t_{0} & t_{1} & \cdots & t_{m}\\ 
+w_{00} & w_{01} & \cdots & w_{0m}\\ 
+w_{10} & w_{11} & \cdots & w_{1m}\\ 
+\vdots & \vdots & \ddots & \vdots\\ 
+w_{n0} & w_{n0} & \cdots & w_{nm}
+\end{bmatrix}
+```
+> &nbsp; &nbsp; &nbsp; &nbsp; 输入样本对$$\\{ X^p,d^p \\}$$，其中$$X^p=(-1, x\_1^p, x\_2^p, \cdots, x\_n^p, )$$，$$d^p=(-1, d\_1^p, d\_2^p, \cdots, d\_m^p, )$$，上标$$p$$为样本对序号，设样本总数为$$P$$。
+> (2) 计算输出
+> &nbsp; &nbsp; &nbsp; &nbsp; 根据转移函数计算实际输出
+```katex
+o_j^p(t) = \text{sgn} (W_j^TX), \;\; j=1,2, \cdots, m
+```
+> (3) 调整权值
+> &nbsp; &nbsp; &nbsp; &nbsp; 根据学习规则调整权值
+```katex
+W_{j}(t+1) = W_{j}(t) + \eta(d_{j}^{p} - o_{j}^{p})X^{p}, \;\; j=1,2, \cdots, m
+```
+> (5) 到步骤(2)，计算下一样本输出
+
+**收敛性：**许多学者已经证明，如果输入样本线性可分，则无论感知器的初始权向量如何取值，经过有限次调整后，总能够稳定到一个权向量，该权向量确定的超平面能够将样本正确分开。
+
+下面举个例子耍耍。
+
+考虑一个分类问题，其数据为
+```katex
+\begin{matrix}
+\left \{ X^{1}=\begin{bmatrix}
+1\\ 
+-1
+\end{bmatrix}, d^{1}=1 \right \}, & \left \{ X^{1}=\begin{bmatrix}
+0\\ 
+0
+\end{bmatrix}, d^{1}=1 \right \}, & \left \{ X^{1}=\begin{bmatrix}
+-1\\ 
+1
+\end{bmatrix}, d^{1}=1 \right \}
+\end{matrix}
+\\
+\begin{matrix}
+\left \{ X^{1}=\begin{bmatrix}
+1\\ 
+0
+\end{bmatrix}, d^{1}=0 \right \}, & \left \{ X^{1}=\begin{bmatrix}
+0\\ 
+1
+\end{bmatrix}, d^{1}=0 \right \}
+\end{matrix}
+```
+
+根据数据的格式，可以使用单节点感知器，感知器拓补结构同图 2.2。由于数据是二维的，可以在平面上绘制出数据的分布图，根据目标值的不同，赋予不同的颜色，如图 2.4所示。
+
+<div align="center" style="background-color: #999;width: max-content;margin: auto;margin-bottom: 1rem;">![](/static/images/img_art/0015522851534427d975e64272d4f6c9127b4f725ba1896000.png)
+图2.4 数据分布图
+
+</div>
+
+易知输入样本是线性可分的，下面使用 Python 编程求解。
+
+```python
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# 数据
+T = 0.5 # 阈值
+W = np.hstack( (np.array([T]), np.random.random((2,))/10) )# 权值
+X = np.array([[-1,1,-1],[-1,0,0],[-1,-1,1],[-1,1,0],[-1,0,1]]) # 样本
+d = np.array([1,1,1,0,0]) # 期望
+eta = 0.1 # 学习率
+def f(x): # 转移函数
+    return -1*np.signbit(x) + 1
+
+# 查看数据
+plt.figure(1)
+plt.plot(X[:3,1],X[:3,2],'ro')
+plt.plot(X[3:,1],X[3:,2],'bo')
+plt.show()
+
+# 训练
+step = 1
+MAX = 100
+epsilon = 1e-2
+O = np.zeros(X.shape[0])
+while True:
+    k = 0
+    for x in X:
+        O[k] = f(W.T.dot(x)) # 计算实际输出
+        W = W + eta*(d[k]-O[k])*x # 调整权值
+        k += 1
+    print('step ', step, ': ', f(W.T.dot(X.T)))
+    step += 1
+    if np.sum(np.abs(f(W.T.dot(X.T))-d)) < epsilon or step > MAX:
+        break
+
+# 绘图
+n = 11 # 取样点
+x = np.vstack((-np.ones(n), np.linspace(-1,1,n))).T
+y = (x.dot(W[0:2]))/(-W[2])
+plt.figure(1)
+plt.plot(X[:3,1],X[:3,2],'ro')
+plt.plot(X[3:,1],X[3:,2],'bo')
+plt.plot(x[:,1],y)
+plt.show()
+```
+
+结果如下图 2.5 所示。
+
+<div align="center" style="background-color: #999;width: max-content;margin: auto;margin-bottom: 1rem;">![](/static/images/img_art/001552285367247516d5f215bb04688aabea1ae86dbea44000.png)
+图2.5 分类结果图
+
+</div>
+
+## 2.4 感知器局限性和解决途径
+
+**(1) 局限性**
+
+之前一直在强调单层感知器只能解决线性可分问题，究竟是问什么呢？下面举个例子就懂了。
+
+尝试实现一种具有逻辑“异或”功能的感知器，根据“异或”逻辑的真值表，我们可以这些值这些作为数据进行训练。
+
+在肝算法和代码之前，先我们来看看数据的分布，如图 2.6 所示。可以发现，无论我们怎样画，都不能用一条直线将这两批点分开，这就是线性不可分。
+
+其实不光感知机无法处理异或问题，所有的线性分类模型都无法处理异或分类问题。
+
+<div align="center" style="background-color: #999;width: max-content;margin: auto;margin-bottom: 1rem;">![](/static/images/img_art/0015522865377879287ca6cd21b47c3953a7bc55527a81d000.png)
+图2.6 逻辑“异或”数据分布图
+
+</div>
+
+**(2) 解决途径**
+
+克服单计算层感知器的局限性有一个有效办法，相信各位已经有点头绪了，那就是在输入层和输出层之间**引入隐层**，变为多计算层感知器。
+
+为什么这样就能够解决问题呢？回顾感知器线性分类功能的几何意义，对于二维输入数据，如图 2.7，我们用一个单计算节点感知器 1，可以画出一条直线将数据一分为二，如果我们再引入一个感知器 2，则又得到另外一种分类，以另一种方式将数据一分为二。现在让我们将两两直线合并在一起，构成一个单隐层感知器，如图 2.8 所示，在神经网络最右边添加一个输出层神经元，它的作用是综合感知器 1 和感知器 2 的结果，构成一个开放式凸域。显然，通过适当调整两条直线的位置，可以使两类不可分样本分别位于该开放式凸域内部和外部。
+
+<div align="center">![](/static/images/img_art/001552291537709b6c8de803c5d4ddc9ca0a67718189aed000.png)
+图2.7 两个感知器
+
+</div>
+
+<div align="center">![](/static/images/img_art/001552291546300b521d40e74754a3aa59572f55fa746f7000.png)
+图2.8 合并后的单隐层感知器
+
+</div>
+
+下面再稍微深入一下，从上面的例子可以看到，单隐层中有两个节点时，可以构建出具有两条边的凸区域。
+
+而当单隐层感知器具有多个节点时，对应的多边形凸域边数增加，从而在输入空间构建出任意形状的凸域。
+
+如果在此基础上在增加一层，称为第二个隐层，则该层的每个节点确定一个凸域，各种凸域输出层节点组合后可以构建出任意形状的域。凸域组合成任意形状的域之后，意味着双隐层的分类能力比单隐层大大提高。Kolmogorov 理论指出：双隐层感知器足以解决任何复杂的分类问题。该结论已经过严格的数学证明。
+
+下面对不同隐层感知器的分类能力进行总结，如下表所示。
+
+<div align="center">![](/static/images/img_art/001552292214813810c70f7a1b64725a8a01acdfebce125000.png)
+
+</div>
+
+**补充点：**
+
+* 实际上，提高感知器分类能力的另一个途径是，采用非线性连续函数作为神经元节点的转移函数。这样做的好处是能是区域边界线的基本线素由直线变成曲线，从而使整个边界线变成连续光滑的曲线。
+* 虽然含有隐层的多层感知器能大大提高网络的分类能力，但长期以来没有提出解决隐层神经元的学习规则问题，尚缺少解决权值调整问题的有效算法。
+
+为了解决隐层神经元的权值调整问题，1986 年，Rumelhart 和 McCelland 领导的科学家小组在《Parallel Distributed Processing》一书中，对具有非线性连续转移函数的多层感知器的误差反向传播（error back proragation，简称 BP）算法进行了详尽的分析，实现了 Minsky 关于多层网络的设想。关于 BP 神经网络，请看下一篇文章。

@@ -2,7 +2,7 @@
 
 最近正在学习计算智能，阅读教材为《人工神经网络理论、设计及应用》，所以计划做一系列跟此课程学习相关的笔记，巩固知识，加深交流。因为是学习笔记，难免会在知识的结构、内容上存在误解或疏漏，还请朋友们帮忙指正，欢迎交流。
 
-#神经网络的三大要素
+#1 神经网络的三大要素
 
 ##1.1 建模
 ###1.1.1 生物上的神经网络
@@ -15,7 +15,8 @@
 另外，当刺激过小时，神经元并不会产生兴奋或者抑制，只有当刺激大过某一阈值时，神经元才会响应。而且当神经元处于兴奋或抑制状态时，无论来此其他神经元的刺激有多大，都不会再次做出响应，需要一定的时间恢复后才能再次接受刺激，这段时间成为不应期。
 
 <div align="center">![](/static/images/img_art/001551785771893de5c5614f2ed40d8854caf999dafe8e1000.jpg)
-图1.1 生物神经元示意</div>
+图1.1 生物神经元示意
+</div>
 
 ###1.1.2 神经网络的 6 点假设
 
@@ -42,7 +43,8 @@
 根据上述特点，可以建立如图1.2的神经元模型**图解表达**：
 
 <div align="center">![](/static/images/img_art/001551785801144db52d16edf234aeea3cccd01f94dc195000.jpg)
-图1.2 神经元模型图解表达</div>
+图1.2 神经元模型图解表达
+</div>
 
 其中$$x_1 \cdots  x_n$$ 为神经元的输入，$$o^j$$为神经元的输出，体现“多输入单输出”；
 
@@ -90,6 +92,7 @@ $$o\_j = f(net\_j)=f(W\_j^TX)$$
 单极性阈值函数：
 
 <div style="max-width:60%;margin:auto;">![](/static/images/img_art/001551785830835f9b67c6acb57432c9bb1045fc4f3651f000.jpg)
+
 </div>
 
 > 这是神经元模型中最简单的一种，经典的 M-P 模型就属于这一类。
@@ -97,6 +100,7 @@ $$o\_j = f(net\_j)=f(W\_j^TX)$$
 双极性阈值函数：
 
 <div style="max-width:60%;margin:auto;">![](/static/images/img_art/00155178587267289dfaec2d00b43c8854f0d6e6ac5671d000.jpg)
+
 </div>
 
 > 这是神经元模型中常用的一种，处理离散信号问题时经常考虑用这种转移函数。
@@ -106,6 +110,7 @@ $$o\_j = f(net\_j)=f(W\_j^TX)$$
 单极性 Sigmoid 函数：
 
 <div style="max-width:60%;margin:auto;">![](/static/images/img_art/0015517858906549c687d1ff2244cd6a8091d11ab768b69000.jpg)
+
 </div>
 
 > 这是最常用的非线性转移函数，因其函数和导函数均是连续的，有非常好的光滑性，便于处理。
@@ -113,6 +118,7 @@ $$o\_j = f(net\_j)=f(W\_j^TX)$$
 双极性 Sigmoid 函数：
 
 <div style="max-width:60%;margin:auto;">![](/static/images/img_art/0015517859118196f56e436829b44e7b25e43b1743a00d4000.jpg)
+
 </div>
 
 > 有时也采用这种双极性的。
@@ -120,6 +126,7 @@ $$o\_j = f(net\_j)=f(W\_j^TX)$$
 **（3）分段线性转移函数**
 
 <div style="max-width:60%;margin:auto;">![](/static/images/img_art/00155178593131341b867ffb2f040369e25eec35832b82f000.jpg)
+
 </div>
 
 > 这种函数实现上比较简单，特点是神经元的输入和输出在一定区间内满足线性关系。
@@ -147,7 +154,9 @@ $$\displaystyle P\\{x=1\\}=\frac{1}{1+e^{-x/T}}$$
 
 三种情况的示意图如下图所示。
 
-<div style="max-width:80%;margin:auto;">![](/static/images/img_art/001551785949302d683d57833b1482c82f506cc1a614366000.jpg)</div>
+<div style="max-width:80%;margin:auto;">![](/static/images/img_art/001551785949302d683d57833b1482c82f506cc1a614366000.jpg)
+
+</div>
 
 **（2）互连型结构**
 
@@ -159,7 +168,9 @@ $$\displaystyle P\\{x=1\\}=\frac{1}{1+e^{-x/T}}$$
 
 前两种情况的示意图如下图所示。
 
-<div style="max-width:60%;margin:auto;">![](/static/images/img_art/0015517859627633cd79302dc7f4ac28eba535e42925f46000.jpg)</div>
+<div style="max-width:60%;margin:auto;">![](/static/images/img_art/0015517859627633cd79302dc7f4ac28eba535e42925f46000.jpg)
+
+</div>
 
 ##1.4 学习规则
 ###1.4.1 通用学习规则
@@ -188,7 +199,7 @@ $$W\_j(t+1)=W\_j(t)+\eta r[W\_j(t),X(t),d\_j(t)]X(t)$$
 ###1.4.2 常用学习规则
 下面对常用学习规则进行简要罗列，其具体应有将在后面的学习中展开。
 
-![](/static/images/img_art/001551785987212c389f0a13e6b471891be22f45eb33b45000.jpg)
+![](/static/images/img_art/0015519442544496314933556674a3bae5c86d6bdb43a9b000.jpg)
 
 **注释：**
 
