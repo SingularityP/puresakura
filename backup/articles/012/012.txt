@@ -1,0 +1,247 @@
+【神经网络】8 CPN 网络
+
+对象传播网络，英文名 counter propagation network，简称 CPN，也是将竞争学习规则和有监督学习规则结合起来的神经网络模型，这种混合的优点体现在收敛速度快、泛化能力强，但同时也继承了 SOM 的缺点。
+
+# 8 CPN 网络
+## 8.1 模型建立
+CPN 是另一种无监督和有监督学习结合的神经网络模型，属于有监督学习。
+
+该网络的用途值得一提，应用广泛，包括匹配系统、联想存储、模式分类、函数逼近、统计分析和数据压缩等。
+
+**(1) 拓补结构**
+
+CPN 网络的拓补结构与 BP 网络没有任何区别，如图 8.1 所示。输入层有$$n$$个神经元；隐藏层有$$m$$个神经元，与输入层全连接；输出层有 $$l$$个 神经元，与竞争层的全连接。
+
+<div style="max-width:60%;margin:auto;text-align:center;">![](/static/images/img_art/0015533971064725527e251bdc34d89a7c85cc9b5933320000.png)
+图8.1 CPN网络拓补结构
+
+</div>
+
+网络各层的数学描述如下：
+
+输入层输入向量：$$X = (x\_1, x\_2, \cdots, x\_n)^T$$;
+
+竞争层输出向量：$$Y = (y\_1, y\_2, \cdots, y\_m)^T, \; \; y_j \in \\{0,1\\}, \; \; j = 1,2,\cdots,m$$
+
+输出层输出向量：$$O = (o\_1, o\_2, \cdots,o\_l)^T$$
+
+网络的期望输出：$$d=(d\_1,d\_2, \cdots, d\_l)^T$$
+
+输入层到竞争层的权值矩阵：$$V=(V\_1,V\_2, \cdots, V\_j, \cdots, V\_m)$$
+
+竞争层到输出层的权值矩阵：$$W=(W\_1,W\_2, \cdots, W\_k, \cdots, W\_l)$$
+
+**(2) 转移函数和学习规则**
+
+虽然在拓补结构上，CPN 网络与 BP 网络没有什么区别，但是内在的学习规则却有着很大的不同。
+
+首先隐藏层是 Kohonen 竞争层，采用无监督的竞争学习规则（即【神经网络】1 中提到的 Winner-Take-All 内星学习规则），
+
+```katex
+\displaystyle V_{j^*}^T X = \max _{j=1,2,\cdots,m} \{ V_{j}^T X \}
+```
+
+```latex
+V_{j^*} (t+1) = V_{j^*}(t) + \eta (t) \left [ X - V_{j^*}(t) \right ]
+```
+
+转移函数使获胜神经元输出$$1$$，其余输出$$0$$，
+
+```katex
+y_j = \begin{cases}
+   0 & j \neq j^* \\
+   1 & j = j^*
+\end{cases}
+```
+
+输出层为 Grossberg 层，采用有监督的 LMS(Widrow-Hoff) 规则或 Grossberg 规则（即【神经网络】1 中提到的 Outstar/外星学习规则），
+
+```katex
+W_{jk}(t+1) = W_{jk}(t) + \beta(t) \left [ d_k - o_k(t) \right ], \; \; j = 1,2, \cdots, m; \; k = 1,2,\cdots,l
+```
+
+转移函数取值直接是各个外星节点输出之和：
+
+```katex
+\displaystyle
+o_k(t) = \sum _{k=1} ^l w_{jk}y_j = W_j^Ty
+```
+
+考虑到向量$$y$$非零即一的特性，有
+
+```katex
+\displaystyle
+o_k(t) = w_{j^*k} y_{j^*} = w_{j^*k}
+```
+
+```katex
+W_{jk}(t+1) = \begin{cases}
+   w_{jk}(t) & j \neq j^* \\
+   w_{jk}(t) + \beta(t) \left[ d_k - w_{jk}(t) \right ] & j = j^*
+\end{cases}
+```
+
+## 8.2 算法设计
+**(1) 原理**
+
+训练分两个阶段进行。第一阶段从输入层到竞争层，采用竞争学习算法对输入层到竞争层的内星权向量进行训练；第二阶段从竞争层到输出层，采用有监督学习算法对竞争层到输出层的外星权向量进行训练。
+
+待网络两层都训练好之后，运行阶段首先向网络送入输入向量，隐藏层中净输入最大的节点获胜，成为当前输入模式类的代表，如图 8.2(a) 所示，该活跃神经元输出值$$1$$，其余输出$$0$$。获胜神经元激励输出层神经元，产生如图 8.2(b) 所示的输出模式。
+
+<div style="max-width:60%;margin:auto;text-align:center;">![](/static/images/img_art/001553400419980d71992479f3c46e9ade74ed2122abf1a000.png)
+图8.2 运行原理图
+
+</div>
+
+**(2) 算法**
+
+> 第一阶段
+> (1) 初始化和归一化
+> &nbsp; &nbsp; &nbsp; &nbsp; 初始化内星权值矩阵$$V$$，随机取值$$0 \sim 1$$，并对每个内星权向量归一化得$$\hat{V}$$；将输入模式向量归一化的$$\hat{X}$$。
+> &nbsp; &nbsp; &nbsp; &nbsp; 定义内星学习率为退火函数$$\eta(t)$$，定义外星学习率为退火函数$$\beta(t)$$。
+
+> (2) 输入模式
+> &nbsp; &nbsp; &nbsp; &nbsp; 输入一个模式$$X^p$$，计算净输入$$net\_j = \hat{V}\_j^T \hat{X}, \;\; j=1,2,\cdots,m$$。
+
+> (3) 寻找获胜节点
+> &nbsp; &nbsp; &nbsp; &nbsp; 确定竞争获胜神经元$$\displaystyle \hat{V}\_{j^\*}^T X = \max \_{j=1,2,\cdots,m} \\{ \hat{V}\_{j}^T X \\}$$，其中$$j^\*$$为获胜神经元下标。
+
+> (4) 调整内星权值
+> &nbsp; &nbsp; &nbsp; &nbsp; 调整输入层到竞争层的内星权向量，只有获胜的神经元才有权调整权值，规则为
+```latex
+\hat{V}_{j^*} (t+1) = \hat{V}_{j^*}(t) + \eta (t) \left [ \hat{X} - \hat{V}_{j^*}(t) \right ]
+```
+
+> (5) 重新归一化权值矩阵$$\hat{V}$$，重复过程 (2) 至 (4)，直到$$\eta (t)$$下降至$$0$$。
+
+> 第二阶段
+> (6) 输入模式
+> &nbsp; &nbsp; &nbsp; &nbsp; 输入模式对$$X^p$$和$$d^p$$，计算净输入$$net\_j = \hat{V}\_j^T \hat{X}, \;\; j=1,2,\cdots,m$$
+
+> (7) 寻找获胜节点
+> &nbsp; &nbsp; &nbsp; &nbsp; 确定竞争获胜神经元$$\displaystyle net\_{j^*} = \max \_j \\{ net\_j \\}$$，使得
+```katex
+y_j = \begin{cases}
+   0 & j \neq j^* \\
+   1 & j = j^*
+\end{cases}
+```
+
+> (8) 调整外星权值
+> &nbsp; &nbsp; &nbsp; &nbsp; 调整竞争层到输出层的外星权向量，调整规则为
+```katex
+W_{jk}(t+1) = \begin{cases}
+   w_{jk}(t) & j \neq j^* \\
+   w_{jk}(t) + \beta(t) \left[ d_k - w_{jk}(t) \right ] & j = j^*
+\end{cases}
+```
+
+> (9) 重复过程 (6) 至 (8)，直到$$\beta (t)$$下降至$$0$$。
+
+**(3) 实现**
+
+有了详细的算法，我们就用 Python 具体实现一下。
+
+考虑一个人，已知其本星期应该完成的工作量和他的思想情绪状态，试设计一个 CPN 网络对此人星期日下午的活动安排提出建议。训练样本模式如下图 8.3 所示：
+
+<div style="max-width:80%;text-align:center;margin:auto">![](/static/images/img_art/001554522147729493185e446d145cca1ec66d6d9bd8d67000.png)
+图8.3 训练样本模式
+
+</div>
+
+为了避免训练样本模式的零向量，将工作量列的所有数据加一，准备数据如下：
+
+```python
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+'''数据准备'''
+# 输入模式
+X = np.array([[0.0, 0.0],[0.5, 0.0],[0.0, 0.5],[1.0, 1.0],[0.5, 1.0],[1.0, 0.5]]).T
+X[0,:] += 1 # 避免 0 向量
+# 期望输出
+D = np.eye(5)
+D = np.vstack((D[0,:], D)).T
+```
+
+然后设计如下类型的 CPN 网络，输入层节点个数与输入模式维度相匹配，竞争层节点个数为输入层节点个数的 4 倍，输出层节点个数与输出向量维度匹配。
+
+```python
+'''网络设计'''
+P = X.shape[1] # 输入模式数量
+n = X.shape[0] # 输入层节点个数
+m = 4*n # 隐层节点个数
+l = D.shape[0] # 输出层节点个数
+V = np.random.random((n,m))/10 # 内星权值矩阵
+W = np.random.random((l,m)) # 外星权值矩阵
+tm = 20 # 最大学习时间
+eta = lambda x: 0.6*(1-t/tm) # 内星学习率
+beta = lambda x: 0.6*(1-t/tm) # 外星学习率
+```
+
+然后分两个阶段训练 CPN 网络：
+
+```python
+'''网络训练'''
+# 第一阶段
+t = 0
+while eta(t) > 1e-2:
+    p = 0
+    while p<P:
+        x = X[:,p].reshape(n,1) # 输入数据
+        x = x/(np.sqrt(x.T.dot(x))) # 归一化
+        V = V/(np.ones((n,1)).dot(np.sqrt(np.diag(V.T.dot(V))).reshape((1,m)))) # 归一化
+        # 输入层
+        net = V.T.dot(x) # 计算网络输入
+        # 竞争层
+        ind = np.argmax(net) # 寻找获胜神经元
+        # 调整内星权值
+        V[:,ind] = V[:,ind] + eta(t)*(x.reshape(n)-V[:,ind])
+        p += 1
+    t += 1
+# 第二阶段
+t = 0
+while beta(t) > 1e-2:
+    p = 0
+    while p<P:
+        # 输入层
+        x = X[:,p].reshape(n,1) # 输入数据
+        d = D[:,p] # 期望输出
+        net = V.T.dot(x) # 计算网络输入
+        # 竞争层
+        ind = np.argmax(net) # 寻找获胜神经元
+        # 调整权值
+        W[:,ind] = W[:,ind] + beta(t)*(d-W[:,ind])
+        p += 1
+    t += 1
+```
+
+测试一下输出：
+
+```python
+'''测试输出'''
+p = 0
+while p<P:
+    # 输入层
+    x = X[:,p].reshape(n,1) # 输入数据
+    d = D[:,p] # 期望输出
+    net = V.T.dot(x) # 计算网络输入
+    # 竞争层
+    ind = np.argmax(net) # 寻找获胜神经元
+    y = np.zeros((m,1)) # 竞争层输出向量
+    y[ind] = 1 # 获胜神经元输出
+    # 输出层
+    o = W.dot(y) # 输出层输出向量
+    print('模式 %d ' % p, '预测活动：', ''.join([str(int(round(x))) for x in o.reshape(l)]), '实际活动：', ''.join([str(int(x)) for x in d]))
+    p += 1
+```
+
+	模式 0  预测活动： 10000 实际活动： 10000
+	模式 1  预测活动： 10000 实际活动： 10000
+	模式 2  预测活动： 00100 实际活动： 01000
+	模式 3  预测活动： 00100 实际活动： 00100
+	模式 4  预测活动： 00010 实际活动： 00010
+	模式 5  预测活动： 00001 实际活动： 00001
+	
+除了模式2 外，其他模式的掌握均正确。看来训练得还可以，泛华能力还没试过，也要注意一下。

@@ -66,7 +66,7 @@
             <article id="intro">
                 <h2 class="major">Intro</h2>
                 <span class="image main"><img src="../static/images/pic01.jpg" alt="" /></span>
-                <p>Aenean ornare velit lacus, ac varius enim ullamcorper eu. Proin aliquam facilisis ante interdum congue. Integer mollis, nisl amet convallis, porttitor magna ullamcorper, amet egestas mauris. Ut magna finibus nisi nec lacinia. Nam maximus erat id euismod egestas. By the way, check out my <a href="#work">awesome work</a>.</p>
+                <p>Aenean ornare velit lacus, ac varius enim ullamcorper eu. Proin aliquam facilisis ante interdum congue. Integer mollis, nisl amet convallis, porttitor magna ullamcorper, amet egestas mauris. Ut magna finibus nisi nec lacinia. Nam maximus erat id euismod egestas. By the way, check out my <a href="https://github.com/SingularityP">awesome work</a>.</p>
                 <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis dapibus rutrum facilisis. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Etiam tristique libero eu nibh porttitor fermentum. Nullam venenatis erat id vehicula viverra. Nunc ultrices eros ut ultricies condimentum. Mauris risus lacus, blandit sit amet venenatis non, bibendum vitae dolor. Nunc lorem mauris, fringilla in aliquam at, euismod in lectus. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. In non lorem sit amet elit placerat maximus. Pellentesque aliquam maximus risus, vel sed vehicula.</p>
             </article>
 
@@ -244,14 +244,46 @@
                 infos: null,
                 images: null,
                 loading: true,
-                errored: false
+                errored: false,
+                offset: 20,
+                nextPage: 2,
+            },
+            created: function () {
+                window.addEventListener('scroll', this.handleScroll);
             },
             mounted: function () {
-                axios
-                .get("/api/blogs/1")
+                axios.get("/api/blogs/1")
                     .then(response => { this.infos = response.data.infos; this.images = response.data.images; })
-                .catch(error => { console.log(error); this.errored = true })
-                .finally(() => this.loading = false)
+                    .catch(error => { console.log(error); this.errored = true; })
+                    .finally(() => this.loading = false);
+            },
+            methods: {
+                getScrollBottomHeight: function () {
+                    let getPageHeight = document.querySelector('html').scrollHeight; // total height
+                    let getScrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop; // scrolled height
+                    let getWindowHeight = window.innerHeight || document.documentElement.clientHeight; // visible height
+                    return getPageHeight - getScrollTop - getWindowHeight;
+                },
+                handleScroll: function () {
+                    if (this.getScrollBottomHeight() <= this.offset)
+                        this.updateData();
+                },
+                updateData: function () {
+                    if (this.loading === false && this.nextPage > 0) {
+                        this.loading = true;
+                        axios.get("/api/blogs/1", { params: { 'page':this.nextPage } })
+                            .then(response => {
+                                console.log(response.data.infos);
+                                if (response.data.infos.length > 0) {
+                                    this.infos = this.infos.concat(response.data.infos);
+                                    this.nextPage += 1;
+                                }
+                                else this.nextPage = -1;
+                            })
+                            .catch(error => { console.log(error); this.errored = true; })
+                            .finally(() => this.loading = false);
+                    }
+                },
             }
         });
 

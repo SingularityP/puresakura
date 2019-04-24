@@ -5,51 +5,89 @@
 {% block beforehead %}
 <link rel="stylesheet" href="../static/css/editormd.min.css" type="text/css" />
 <style>
-	
-	.editormd-html-preview code {
-		border: none;
-		background: rgba(255, 255, 255, 0.075);
-		margin: 0;
-		padding: 1.5px 0;
-	}
-	
+
+    .editormd-html-preview code {
+        border: none;
+        background: rgba(255, 255, 255, 0.075);
+        margin: 0;
+        padding: 1.5px 0;
+    }
+
+    #top_rocket {
+        position: fixed;
+        top: 85%;
+        right: 10%;
+        z-index: 10;
+    }
+
+        #top_rocket a {
+            border-bottom: none;
+            display: none;
+        }
+
+        #top_rocket #top_active {
+            display: none;
+        }
+
+    #back_button {
+        position: fixed;
+        top: 3%;
+        right: 3%;
+        z-index: 10;
+        padding: 0 0.5rem;
+        border-radius: 50%;
+        color: lightgray;
+        cursor: pointer;
+        -moz-transition: background-color 0.2s ease-in-out;
+        -webkit-transition: background-color 0.2s ease-in-out;
+        -ms-transition: background-color 0.2s ease-in-out;
+        transition: background-color 0.2s ease-in-out;
+		transform: scale(1.5);
+    }
+
+        #back_button:hover {
+            background-color: rgba(255, 255, 255, 0.075);
+        }
+
+    #back_button a {
+        border-bottom: none;
+    }
+
 </style>
 {% endblock %}
 
 {% block content %}
 
-
+<div id="top_rocket">
+    <a id="top_btn" href="javascript:;">
+        <img id="top_active" src="/static/images/up_active.png" alt="回到顶部" />
+        <img id="top_unactive" src="/static/images/up_unactive.png" alt="回到顶部" />
+    </a>
+</div>
+<div id="back_button">
+    <a href="/"><i class="icon fa-arrow-left"></i></a>
+</div>
 <div id="re_editor">
-
     <div id="md_editor" class="editormd-preview-theme-dark" :style="md_style">
         <textarea>{(blog.content|safe)}</textarea>
     </div>
 
     <div id="cm_editor">
-    {% if __user__ %}
+        {% if __user__ %}
 
         <h3>评论</h3>
 
         <hr class="divider" />
 
         <form id="reply" @submit.prevent="submit()">
-            <img class="user_img" :src="user_img" @error.once="user_img='/static/images/user.jpg'"/>
+            <img class="user_img" :src="user_img" @error.once="user_img='/static/images/user.jpg'" />
             <textarea v-model="content"></textarea>
             <input type="submit" value="回复" />
         </form>
 
         <div style="clear:both"></div>
 
-        <div id="comment">
-            <outcomment v-for="comment in comments"
-                        v-bind:key="comment.id"
-                        v-bind:comment="comment"
-                        v-bind:images="images"
-						v-bind:id_img="user_img"
-                        ></outcomment>
-        </div>
-
-    {% else %}
+        {% else %}
 
         <h3>请登录后发表评论</h3>
 
@@ -60,8 +98,17 @@
             <div id="reg_part"><a href="/#register"><i class="icon fa-user-plus"></i> 注册</a></div>
         </div>
 
-    {% endif %}
-     </div>
+        {% endif %}
+
+        <div id="comment">
+            <outcomment v-for="comment in comments"
+                        v-bind:key="comment.id"
+                        v-bind:comment="comment"
+                        v-bind:images="images"
+                        v-bind:id_img="user_img"
+                        v-bind:isUser={% if __user__ %}true{% else %}false{% endif %}></outcomment>
+        </div>
+    </div>
 
 </div>
 
@@ -83,6 +130,42 @@
 <script src="../static/js/main2.js"></script>
 <script>
 
+    window.onload = function () {
+        var topbtn = document.getElementById("top_btn");
+        var top_active = document.getElementById("top_active");
+        var top_unactive = document.getElementById("top_unactive");
+        var timer = null;
+        var visible_height = window.innerHeight || document.documentElement.clientHeight; // visible height
+
+        window.onscroll = function () {
+            var scrolled_height = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop; // scrolled height
+            if (scrolled_height >= visible_height)
+                topbtn.style.display = 'block';
+            else
+                topbtn.style.display = 'none';
+        }
+
+        topbtn.onclick = function () {
+            timer = setInterval(function () {
+                var backtop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop;
+                var speedtop = -backtop / 5;
+                window.scrollBy(0, speedtop);
+                if (backtop < 1)
+                    clearInterval(timer);
+            }, 30);
+        }
+
+        topbtn.onmouseenter = function () {
+            top_unactive.style.display = "none";
+            top_active.style.display = "block";
+        }
+
+        topbtn.onmouseleave = function () {
+            top_active.style.display = "none";
+            top_unactive.style.display = "block"
+        }
+    }
+
     var editor = new Vue({
         el: '#re_editor',
         data: {
@@ -95,7 +178,7 @@
         computed: {
             md_style: function () {
                 return {
-					color: 'white',
+                    color: 'white',
                     'background-color': "rgba(27, 31, 34, 0.85)",
                     padding: '4.5rem 2.5rem 1.5rem 2.5rem',
                     font: 'inherit',
@@ -129,10 +212,10 @@
                     console.log(err);
                 });
 
-			editormd.katexURL = {
-				js  : "//cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.1/katex.min",  // default: //cdnjs.cloudflare.com/ajax/libs/KaTeX/0.3.0/katex.min
-				css : "//cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.1/katex.min"   // default: //cdnjs.cloudflare.com/ajax/libs/KaTeX/0.3.0/katex.min
-			};
+            editormd.katexURL = {
+                js: "//cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.1/katex.min",  // default: //cdnjs.cloudflare.com/ajax/libs/KaTeX/0.3.0/katex.min
+                css: "//cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.1/katex.min"   // default: //cdnjs.cloudflare.com/ajax/libs/KaTeX/0.3.0/katex.min
+            };
 
             editormd.markdownToHTML("md_editor", {
                 htmlDecode: "style,script,iframe",  // you can filter tags decode

@@ -30,7 +30,7 @@ class Page(object):
             self.page_index = 1 # 当前页码，设置为 1
         else:
             self.page_index = page_index # 当前页码
-            self.offset = self.page_size *  (self.page_index - 1) # 当前页其实下标
+            self.offset = self.page_size *  (self.page_index - 1) # 当前页起始下标
             self.limit = self.page_size # 一页大小限制
         self.has_next = self.page_index < self.page_count # 是否有下一页
         self.has_previous = self.page_index > 1 # 是否有上一页

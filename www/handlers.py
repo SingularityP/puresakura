@@ -28,31 +28,29 @@ async def index(request):
 ## 1.2 API 请求
 ### 1.2.1 获取博客列表数据 
 def get_page_index(page_str): # 将页码字符串转换为整型
-    logging.debug('[HANDLER]     Handlering /api/blogs, the page_str(no convert) is: ' + page_str)
     p = 1
     try:
         p = int(page_str)
-        logging.debug('[HANDLER]     Handlering /api/blogs, the page_str(have converted) is: ' + str(p))
     except:
         pass
     if p < 1:
         p = 1
     return p
-    
+
 @get('/api/blogs/{sort}') # 获取博客列表，可定制
 async def getBlogs(*, sort='0', page='1'):
     logging.debug('[HANDLER] Handlering /api/blogs/{sort} in index.html ...')
     where_sql = None
-    limit_sql = 10
+    limit_sql = 6
     items_sql = ['name', 'summary', 'user_name', 'created_at', 'readers']
-    if sort != '0': # 全选时
+    if sort == '0': # 全选时
         where_sql="sort=" + sort # 构造类别条件
         page = None # 不用页码对象
     else: # 按类别选取时，构造页码对象，并设置 limit 和 items
         page_index = get_page_index(page)
         logging.debug('[HANDLER]     Handlering /api/blogs/{sort}, the page_index is: ' + str(page_index))
         num = await Blog.findNumber('count(id)') # 获取条目总数
-        page = Page(num, page_index, 10)
+        page = Page(num, page_index, limit_sql)
         if num == 0: # 处理无条目的情况
             logging.warning('[HANDLER]     No data! Database is empty!')
             return dict(page=page, blogs=())

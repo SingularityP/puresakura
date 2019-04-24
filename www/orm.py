@@ -49,9 +49,9 @@ def select(sql, args, size=None): # SELECT语句封装
             else:
                 rs = yield from cur.fetchall()
             yield from cur.close() # 关闭指针
-            logging.info('[ORM]     rows return: %s' % len(rs)) # 记录日志
+            logging.info('[ORM]     rows return: %s' % len(rs) if rs else 0) # 记录日志
             return rs # 返回数据
-        except BaseException as e:
+        except Exception as e:
             logging.error('[ORM] ' + str(e))
 
 @asyncio.coroutine
@@ -188,7 +188,7 @@ class Model(dict, metaclass=ModelMetaclass):
     def find(cls, pk): # 定义类方法 - 主键查找
         'find object by primary key.'
         rs = yield from select('%s where `%s`=?' % (cls.__select__, cls.__primary_key__), [pk], 1)
-        if len(rs)==0:
+        if not rs or len(rs)==0:
             return None
         return cls(**rs[0]) # 建立并返回当前类实例
     

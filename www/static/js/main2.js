@@ -86,7 +86,7 @@ if (typeof (Vue !== 'undefined')) {
     });
     
     Vue.component('outcomment', {
-        props: ['comment', 'images', 'id_img'],
+        props: ['comment', 'images', 'id_img', 'isUser'],
         data() {
             return {
                 content: '',
@@ -97,7 +97,10 @@ if (typeof (Vue !== 'undefined')) {
         },
         methods: {
             show_form: function (event) {
-                this.in_visible = {display: 'block'};
+                if (this.isUser)
+                    this.in_visible = { display: 'block' };
+                else
+                    alert("请先登录或注册！");
             },
             submit: function (event) {
                 if (this.content === '') {

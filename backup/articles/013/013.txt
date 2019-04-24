@@ -1,0 +1,385 @@
+【智能算法】模拟退火算法
+
+模拟退火算法（Simulated Annealing，SA） 是一种模拟物理退火的过程而设计的优化算法。它的基本思想最早在1953年就被 Metropolis 提出，但直到1983年 Kirkpatrick 等人才设计出真正意义上的模拟退火算法并进行应用。模拟退火算法采用类似于物理退火的过程...
+
+# 模拟退火算法
+模拟退火算法最早的思想有 Metropolis 等提出，目的是为了解决 NP 复杂性问题提供有效的近似算法，同时其还具有克服局部极小、克服初值依赖的优点。
+
+## 1 固体退火过程
+什么是固体退火？固体退火是指将固体加热到做够高的温度，使分子成随机排列状态，然后逐步降温是指冷却，最后分子以低能状态排列，固体达到某种稳定状态。总之，固体退火就像打铁一样，分为加温、等温、冷却三步过程：
+
+* 加温过程 - 温度升高增强分子热运动，使其偏离平衡状态，消除系统原先可能存在的非均匀状态
+* 等温过程 -  在一个温度下，使系统状态自发变化，朝自由能减少的方向进行，直到自由能最小时候的平衡态
+* 冷却过程 - 温度逐渐下降过程中重复等温过程，使粒子热运动减弱并渐趋有序，系统能量逐渐下降，从而得到低能的有序晶体结构
+
+下面是对该物理过程的数学描述，后面的 Metropolis 准则的提出与之有关，当然了，对物理不感兴趣的同学完全可以跳过。
+
+在温度为$$T$$时，分子停留在状态 $$r$$ 的概率满足 Boltzmann 分布：
+
+```katex
+\displaystyle
+P \left \{ \bar{E}=E(r) \right \} = \frac{\exp \left ( -\frac{E(r)}{k_BT} \right )}{\sum _{s \in D} \exp \left ( -\frac{E(r)}{k_BT} \right )}
+```
+
+其中$$\bar{E}$$表示分子能量的一个随机变量，$$E(r)$$表示状态$$r$$的能量，$$k\_B$$为 Boltzmann 常数，$$D$$为状态空间，注意分母为常数。
+
+从中可以发现，温度越低，处于能量低的微观状态的概率越大；而温度相同时，分子停留在能量小的状态的概率比停留在能量大的状态的概率要大。
+
+那么问题来了，为什么区区“打铁”中能够蕴含解决实际问题的大道理呢？这得指出固体退火过程与组合优化问题之间的内在相似性。如下表所示。
+
+<div style="max-width:40%;margin:auto;text-align:center;">表1 退火过程与组合优化的比较
+![](/static/images/img_art/0015549495659419db23dcc70324976b28ea57195ee8e4e000.png)
+
+</div>
+
+## 2 算法设计
+### 2.1 Metropolis 准则
+受到固体退火过程的启发，诞生了模拟退火算法。而该算法设计的一个关键是模拟固体退火算法中“以概率接受新状态”这一过程，这也正是 Metropolis 准则的目的。
+
+设在温度$$T$$，固体的初态为$$i$$，其状态能量为$$E\_i$$，随机选取某个粒子的位移随机地产生一微小变化，得到一个新状态$$j$$，新状态的能量为$$E\_j$$。
+
+若$$E\_j < E\_i$$，则接受新状态$$j$$。
+
+若$$E\_j>E\_i$$，则产生一随机数$$\xi \in [0,1)$$，若概率$$\displaystyle r=\exp \left ( -\frac{E\_j-E\_i}{kT} \right ) > \xi$$，则接受新状态$$j$$，否则保持原状态$$i$$。
+
+故 Metropolis 准则描述了状态变化时，以概率
+
+```katex
+\displaystyle
+p = \max \left \{ r,1 \right \}
+```
+
+接受新状态，该函数随温度变化的图像如图 2.1 所示，可见高温下可以接受能量差较大的新状态，而低温时只能接受能差较小的新状态，直至温度趋于 0.
+
+<div style="text-align:center;width:max-content;margin:auto;margin-bottom:1rem;background-color:#999;">![](/static/images/img_art/001555571137106be67c0cd591c42e295ec2dfe61cfe31c000.png)
+图2.1 Metropolis 概率曲线
+
+</div>
+
+### 2.2 算法流程
+模拟退火算法的特点是含有两层循环，外循环控制温度下降，内循环控制状态稳定，其中涉及两个循环退出准则和三个重要函数。先来看看算法基本步骤：
+
+> 确定初温$$t=t\_0$$，随机产生初始状态$$s=s\_0$$，令当前最优状态$$s\_{\text{best}}=s\_0$$;
+> Repeat
+> &nbsp; &nbsp; &nbsp; &nbsp; Repeat
+> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 产生新状态$$s\_j=\text{Generate}(s)$$;
+> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 根据状态接受函数 $$\text{Accept}(s,s\_j)$$，判断是否接受新状态$$s=s\_j$$;
+> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 记录当前最优状态$$s\_{\text{best}}$$。
+> &nbsp; &nbsp; &nbsp; &nbsp; Until **抽样稳定准则**满足;
+> &nbsp; &nbsp; &nbsp; &nbsp; 退温$$t\_{k+1}=\text{Update}(t\_k)$$，并令$$k=k+1$$;
+> Until **退火终止准则**满足;
+> 输出算法搜索结果;
+
+从上述算法描述中可以看到，建立模拟退火算法需要解决以下 5 个点：
+
+* 状态产生函数 `Generate(s)`
+* 状态接受函数 `Accept(s,sj)`
+* 温度更新函数 `Updata(tk)`
+* 抽样稳定准则
+* 退火终止准则
+
+另外，初温的设置对模拟退火算法的结果至关重要，故也是需要详细解决的。
+
+### 2.3 设计要点
+**(1) 初始温度值$$T\_0$$**
+
+初始温度值$$T\_0$$要选得足够高，以保证模拟退火算法中所有可能的转移都能被接受，同时，过高的温度导致计算时间增加，故还需兼顾优化效率。
+
+方法：
+
+1> 均匀抽样一组状态，以各状态目标值的方差为初温；
+
+2> 随机产生一组状态，确定两两状态间的最大目标差值，根据差值，利用一定的函数确定初温，如$$\displaystyle t\_0=\frac{-\Delta f}{\ln p}$$，$$p$$为接受概率。
+
+3> 经验公式，如$$t\_0 = K \delta$$，其中 $$\displaystyle \delta = \max \_{j \in s} \\{f(j)\\} - \min \_{j \in s} \\{ f(j) \\}$$
+
+**(2) 状态产生函数**
+
+状态产生函数的设计要尽可能保证产生的候选解遍布全部解空间，这涉及两个方面：一是产生候选解的方式，而是候选解产生的概率分布。
+
+候选解的产生由问题的性质决定，总的来说是在当前状态的邻域结构内按一定概率分布规律产生。
+
+**(3) 状态接受函数**
+
+状态接受函数应尽可能接受优化解，遵循以下原则：
+
+* 固定温度下，接受是目标函数值下降的候选解的概率要大于是目标函数值上升的候选解的概率。
+* 随温度的下降，接受目标函数值上升的解的概率要逐渐减小。
+* 当温度趋于零时，只能接受目标数值下降的解。
+
+一般采用基于 Metropolis 准则的函数 $$\displaystyle \min \\{ 1, \exp \frac{-\Delta C}{t} \\}$$。
+
+**(4) 温度更新函数**
+
+温度更新函数用于在外循环中减小温度值，衰减量“以小为宜”。例如：
+
+1> $$t\_{k+1} = \lambda t\_k$$
+
+2> $$\displaystyle t\_k = \frac{K-k}{K} t\_0, \; k=1,2,\cdots,K$$
+
+**(5) 抽样稳定准则**
+
+抽样稳定准则也即内循环的终止准则，根据内循环终止时的状态是否达到稳定，分为时齐算法和非时齐算法两大类。
+
+* 时齐模拟退火算法
+	* 检验目标函数值的均值是否稳定
+	* 连续若干步目标函数值的变化较小
+	* 按一定的步数抽样
+* 非时齐模拟退火算法
+	* 每个温度下只产生一个或少量候选解
+	
+**(6) 退火终止准则**
+
+退火终止准则也即外循环终止准则，理论上要求温度终值趋于零，常用方法为：
+
+* 设置终止温度的阈值
+* 设置外循环迭代次数
+* 算法搜索到的最优质连续若干步保持不变
+* 检验系统熵是否稳定
+
+## 3 算法实现
+下面用模拟退火算法解决 TSP 问题，现有30个城市，它们的坐标为
+
+```katex
+(41, 94), (37, 84), (54, 67), (25, 62), (7,  64) \\
+(2,  99), (68, 58), (71, 44), (54, 62), (83, 69) \\
+(64, 60), (18, 54), (22, 60), (83, 46), (91, 38) \\
+(25, 38), (24, 42), (58, 69), (71, 71), (74, 78) \\
+(87, 76), (18, 40), (13, 40), [82, 7 ], (62, 32) \\
+(58, 35), (45, 21), (41, 26), (44, 35), (4,  50)
+```
+
+即下图所示的 30 座城市：
+
+<div style="text-align:center;width:max-content;margin:auto;margin-bottom:1rem;background-color:#999;">![](/static/images/img_art/001555569942686572c562cbd354a42b58ebaf7fca86acc000.png)
+图3.1 TSP 城市示意图
+
+</div>
+
+下面用 Python 实现最简单的模拟退火算法，先进行数据处理，输入个城市的坐标到`cities`，然后建立一个函数`GetDistList(cities)`得到两两城市之间的距离矩阵。
+
+```python
+'''
+    函数 GetDistList：地点距离矩阵生成函数
+    用于计算旅行商问题中，地点坐标两两之间的距离，以矩阵形式返回。
+
+    参数说明
+    cities - 各个地点的坐标，每一列表示一个地点
+    
+    返回值说明
+    distlist - 距离矩阵
+'''
+def GetDistList(cities):
+    m,n = cities.shape # 坐标数据维度
+    distlist = np.zeros((n,n)) # 创建距离矩阵
+    for i in range(n):
+        for j in range(n):
+            x = cities[:,i]
+            y = cities[:,j]
+            distlist[i,j] = np.sqrt((x-y).T.dot(x-y))
+            distlist[j,i] = distlist[i,j] # 根据对称性
+    return distlist
+	
+'''数据处理'''
+# 城市坐标
+cities = np.array(
+    [[41, 94], [37, 84], [54, 67], [25, 62], [7,  64],
+     [2,  99], [68, 58], [71, 44], [54, 62], [83, 69],
+     [64, 60], [18, 54], [22, 60], [83, 46], [91, 38],
+     [25, 38], [24, 42], [58, 69], [71, 71], [74, 78],
+     [87, 76], [18, 40], [13, 40], [82, 7 ], [62, 32],
+     [58, 35], [45, 21], [41, 26], [44, 35], [4,  50]]).T
+# 数据维度
+m,n = cities.shape
+# 获取地点距离矩阵
+distlist = GetDistList(cities)
+```
+
+然后准备一下模拟退火过程中要用到的数据，并选择一个合理的初始温度。
+
+```python
+'''
+    函数 Energy: 能量函数
+    用于计算旅行商问题给定状态（路线）下的总路程。
+    
+    参数说明
+    distlist - 两两地点间的距离矩阵
+    route - 旅行路线，每一列的数字表示一个地点
+    
+    返回值说明
+    distance - 路线总路程
+'''
+def Energy(distlist, route):
+    distance = 0 # 总路程
+    length = route.shape[0] # 地点总数
+    for k in range(1,length):
+        distance += distlist[route[k-1], route[k]]
+    distance += distlist[route[0], route[length-1]]
+    return distance
+	
+'''参数设置'''
+# 计算初始温度
+import random
+base = range(n) # 用于随机生成状态
+energy = np.zeros((100,1)) # 100 个状态
+for k in range(100):
+    route = np.array(random.sample(base, n)) # 随机生成一个状态
+    energy[k] = Energy(distlist,route)
+t = -(np.max(energy)-np.min(energy))/np.log(0.9) # 初始温度
+s = np.array(random.sample(base, n)) # 初始状态
+s_best = s.copy() # 初始最优解
+M1 = 10 # 内循环阈值
+alpha = 0.9 # 退温速度系数
+tf = 0.01 # 截止温度
+```
+
+然后就可以参照前面的算法流程设计相应的算法了：
+
+```python
+'''
+    函数 Generate: 状态生成函数
+    旅行商问题的状态生成函数。
+
+    参数说明
+    s0 - 当前状态
+    
+    返回值说明
+    s - 新状态
+'''
+def Generate(s0):
+    selection = np.random.randint(1,3) # 随机方式选择
+    n = s0.shape[0]
+    p1 = p2 = 0
+    while p1 >= p2:
+        p1 = np.random.randint(n)
+        p2 = np.random.randint(n)
+    s = s0.copy()
+    if selection == 1: # 交换法
+        s[p1] = s0[p2]
+        s[p2] = s0[p1]
+    if selection == 2: # 插入法
+        s[p1] = s0[p2]
+        s[p1+1:p2+1] = s0[p1:p2]
+        s[p2+1:] = s0[p2+1:]
+    #print(k,s)
+    return s
+
+'''
+    函数 Accept: 状态接受函数
+    模拟退火算法中用于判断是否接受当前状态。
+    
+    参数说明
+    s_new - 新状态
+    s - 现有状态
+    distlist - 两两地点间的距离矩阵
+    t - 迭代次数
+    
+    返回值说明
+    flag - 表示是否接受新状态
+'''
+def Accept(s_new, s, distlist, t):
+    delta = Energy(distlist, s_new) - Energy(distlist, s) # 计算增量
+    #pdb.set_trace()
+    if delta < 0:
+        return True # 接受新状态
+    elif np.random.rand() < np.min([1, np.exp(-delta/t)]):
+        return True
+    return False
+
+'''
+    函数 Drop: 温度更新函数
+    模拟退火算法中是温度按照一定规律降低。
+    
+    参数说明
+    t - 当前温度
+    param - 降温系数
+    
+    返回值说明
+    t_ - 降温后的温度
+'''
+def Drop(t, param):
+    t_ = param * t
+    return t_
+	
+'''模拟退火'''
+while t >= tf:
+    # 抽样过程
+    q = 0 # 内循环稳定计数器
+    while q < M1:
+        s_new = Generate(s) # 产生新状态
+        if Accept(s_new, s, distlist, t):
+            s = s_new.copy() # 接受新状态
+            if Energy(distlist, s_best) > Energy(distlist, s_new):
+                s_best = s_new.copy() # 更新最佳状态
+            else:
+                q = q + 1 # 稳定性增加
+    # 退温过程
+    t = Drop(t, alpha)
+```
+
+然后输出结果，并用 `matplotlib` 画出路线。
+
+```python
+'''输出结果'''
+# 计算结果
+print('The route is:', ' -> '.join([str(x) for x in s_best.tolist()]))
+print('The distance is:', Energy(distlist,s_best))
+
+# 结果绘图
+import matplotlib as mpl
+mpl.rcParams['font.sans-serif'] = [u'SimHei']
+mpl.rcParams['axes.unicode_minus'] = False
+import matplotlib.pyplot as plt
+result = cities[:,s_best] # 得到排序后的地点坐标
+plt.figure(1)
+plt.scatter(cities[0,:], cities[1,:], c='b') # 绘制地点
+for k in range(n-1):
+    plt.plot(result[0,k:k+2],result[1,k:k+2], 'r')
+plt.plot([result[0,0],result[0,n-1]], [result[1,0],result[1,n-1]], 'r')
+plt.title('30个城市的TSP问题')
+plt.show()
+```
+
+输出的路线和最短距离为：
+
+	The route is: 11 -> 12 -> 3 -> 4 -> 5 -> 0 -> 1 -> 2 -> 8 -> 17 -> 18 -> 19 -> 20 -> 9 -> 10 -> 6 -> 7 -> 13 -> 14 -> 23 -> 24 -> 25 -> 26 -> 27 -> 28 -> 15 -> 16 -> 21 -> 22 -> 29
+	The distance is: 423.74056313320284
+
+将路线展示在图上：
+
+<div style="text-align:center;background-color:#999;margin:auto;margin-bottom:1rem;width:max-content;">![](/static/images/img_art/0015555707214672c0d160bdee94c90ac570be334a1f97a000.png)
+图3.2 模拟退火求解结果
+
+</div>
+
+看起来结果还不错，就是费点运算时间。
+
+## 4 算法改进
+### 4.1 模拟退火算法的评价
+先客套一下模拟退火算法的优缺点，优点无外乎一下几点：
+
+* 算法简单
+* 结果质量高
+* 初值鲁棒性强
+* 简单易实现
+
+而它的缺点也很明显，有高初温、慢降温、低终温导致的：
+
+* 长时间优化过程
+
+### 4.2 改进的可行方案
+泛泛来说，有
+
+* 选择合适的初温
+* 上述三函数两准则的高效设计。
+
+另外，从算法运行过程来看，可以
+
+* 采用并行搜索结构
+* 避免状态的迂回搜索
+
+也可以增加一些新环节
+
+- 增加升温或重升温过程，避免陷入局部极小
+- 增加记忆功能（记忆“Best so far”状态）
+- 增加补充搜索过程（以最优结果为初始解）

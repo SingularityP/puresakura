@@ -1,0 +1,538 @@
+【神经网络】3 BP 神经网络
+
+BP 神经网络是一种按照误差逆向传播算法训练的多层前馈神经网络，是目前应用最广泛的神经网络。其具有任意复杂的模式分类能力和优良的多维函数映射能力，解决了简单感知器不能解决的异或等问题。从结构上讲，BP网络具有输入层、隐藏层和输出层；从本质上讲，BP算法就是以网络误差平方为目标函数、采用梯度下降法来计算目标函数的最小值。
+
+# 3 BP神经网络
+##3.1 BP网络模型
+BP 神经网络是基于感知器改进而来的**有监督**学习模型。BP 算法的基本思想是学习过程信号的正向传播与误差反向传播。正向传播时，输入样本从输入层传入，经隐层逐层处理后，传向输出层。误差反向传播时，输出层误差以某种形式通过隐层向输入层逐层反传，并将误差分摊给各层的所有神经元。
+
+下面以最典型、应用最普遍的单隐层 BP 神经网络为例，建立 BP 网络模型。
+
+单隐层 BP 神经网络简单来说是单隐层感知器（包括输入层、隐层和输出层）加上能够调整隐层权值的 BP 算法组成的。其网络**拓补结构**如图 3.1 所示。注意节点$$x\_0$$和$$y\_0$$不用于反向传播过程中。
+
+<div align="center">![](/static/images/img_art/001552390032584ae32da8052b6433099cae30716d9d32a000.png)
+图3.1 三层 BP 网络
+
+</div>
+
+其中，
+
+ $$X = (x\_1, x\_2, \cdots, x\_i, \cdots, x\_n)^T$$为输入向量，$$x\_0=-1$$是为隐层神经元引入阈值而设置；
+ 
+ $$Y = (y\_1, y\_2, \cdots, y\_j, \cdots, y\_m)^T$$为隐层输出向量，$$y\_0=-1$$是为输出层神经元引入阈值而设置；
+
+ $$O = (o\_1, o\_2, \cdots, o\_k, \cdots, o\_l)^T$$为输出输出向量；
+ 
+ $$d = (d\_1, d\_2, \cdots, d\_k, \cdots, d\_l)^T$$为期望输出向量；
+ 
+ $$V = (V\_1, V\_2, \cdots, V\_j, \cdots, V\_m)^T$$为隐层权值矩阵，列向量$$V\_j$$为隐层第$$j$$个神经元对应的权向量；
+ 
+ $$W = (W\_1, W\_2, \cdots, W\_k, \cdots, W\_l)^T$$为输出层权值矩阵，列向量$$W\_k$$为输出层第$$k$$个神经元对应的权向量；
+ 
+ 根据上面的符号，我们就可以写出输出层和隐层输入与输出的函数符号，务必理解各个符号的含义。
+ 
+ 对于输出层，有：
+ 
+$$o\_k=f(net\_k), \; \; k=1, 2, \cdots, l \; \; \; \; (0a)$$
+
+$$\displaystyle net\_k=\sum\_{k=0}^m w\_{jk}y\_j, \; \; k=1, 2, \cdots, l \; \; \; \; (0a)$$
+
+对于隐层，有：
+
+$$y\_j=f(net\_j), \; \; j=1, 2, \cdots, m \; \; \; \; (0b)$$
+
+$$\displaystyle net\_j=\sum\_{i=0}^n w\_{ij}x\_i, \; \; j=1, 2, \cdots, m \; \; \; \; (0b)$$
+ 
+选取单极性 Sigmoid 函数作为**转移函数**，该函数连续、光滑，导数具有很好的性质：
+
+$$\displaystyle f(x) = \frac{1}{1+e^{-x}}$$
+
+$$\displaystyle f \rq (x) = f(x)[ 1-f(x) ]$$
+
+如果有需要，也可以采用双极性 Sigmoid 函数。
+
+BP 学习算法采用的是 Delta **学习规则**，从【神经网络】1 神经网络的三大要素 这篇文章中可以知道，其是基于最小平方误差原理的。下面简单推导一下。
+
+当实际输出与期望输出不相等时，存在着输出误差，设为$$E$$，即
+
+$$\displaystyle E = \frac{1}{2}(d-O)^2=\frac{1}{2}\sum\_{k=1}^{l}(d\_k-o\_k)^2 \; \; \; \; (*)$$
+
+使用输入输出的函数符号，误差定义可以展开至隐层：
+
+$$\displaystyle E = \frac{1}{2}\sum\_{k=1}^{l} \left [ d\_k-f(net\_k) \right ] ^2 =\frac{1}{2}\sum\_{k=1}^{l} \left [ d\_k- f \left ( \sum\_{j=0}^{m}w\_{jk}y\_j \right ) \right ] ^2$$
+
+进一步展开至输入层：
+
+$$\displaystyle E = \frac{1}{2}\sum\_{k=1}^{l} \left \\{ d\_k - f \left [ \sum\_{j=0}^{m}w\_{jk}f(net\_j) \right ] \right \\} ^2 = \frac{1}{2}\sum\_{k=1}^{l} \left \\{ d\_k- f \left [ \sum\_{j=0}^{m}w\_{jk}f \left ( \sum\_{i=0}^n w\_{ij}x\_i \right ) \right ] \right \\} ^2$$
+
+根据 Delta 学习规则，调整权值应使误差不断地减小，因为误差沿着梯度方向下降最快，故应使权值的调整量与误差的梯度下降成正比，这正是 Delta 学习规则的核心思想，即：
+
+$$\displaystyle \Delta w\_{jk} = -\eta \frac{\delta E}{\delta w\_{jk}}, \; \; j=0, 1, 2, \cdots, m; \; \; k=1, 2, \cdots, l \; \; \; \; (1a)$$
+
+$$\displaystyle \Delta v\_{ij} = -\eta \frac{\delta E}{\delta v\_{ij}}, \; \; i=0, 1, 2, \cdots, n; \; \; j=1, 2, \cdots, m \; \; \; \; (1b)$$
+
+其中，$$\eta \in (0,1)$$为学习率。BP 算法也常被称为误差的梯度下降（gradient descent）算法。
+
+## 3.2 BP算法设计
+
+**(1) 算法推导**
+
+接下来详细推导梯度下降公式中的导数项，以下推导过程中，对输出层均有$$j=0, 1, 2, \cdots, m \; \; k=1, 2, \cdots, l$$，对隐层均有$$i=0, 1, 2, \cdots, n \; \; j=1, 2, \cdots, m$$
+
+分别对于输出层和隐层，求式 (1a) 和 (1b) 的连续导数：
+
+$$\displaystyle \Delta w\_{jk} = -\eta \frac{\delta E}{\delta w\_{jk}} = -\eta \frac{\delta E}{\delta net\_{k}}\frac{\delta net\_{k}}{\delta w\_{jk}} \; \; \; \; (2a)$$
+
+$$\displaystyle \Delta v\_{ij} = -\eta \frac{\delta E}{\delta v\_{ij}} = -\eta \frac{\delta E}{\delta net\_{j}}\frac{\delta net\_{j}}{\delta v\_{ij}} \; \; \; \; (2b)$$
+
+记输出层和隐层的误差信号分别为$$\displaystyle \delta\_k^o=-\frac{\delta E}{\delta net\_{k}}$$，$$\displaystyle \delta\_j^y=-\frac{\delta E}{\delta net\_{j}}$$，在根据上一节式 (0a) 和 (0b) 关于函数$$net\_k$$和$$net\_j$$的表达式，可以改写 (2a) 和 (2b) 为：
+
+$$\Delta w\_{jk} = \eta \delta\_k^o y\_j \; \; \; \; (3a)$$
+
+$$\Delta v\_{ij} = \eta \delta\_j^y x\_i \; \; \; \; (3b)$$
+
+下面只需要继续推导误差信号$$\delta\_k^o$$和$$\delta\_j^y$$即可，将输出层和隐层的误差信号展开一下：
+
+$$\displaystyle \delta\_k^o = -\frac{\delta E}{\delta net\_{k}} = -\frac{\delta E}{\delta o\_{k}} \frac{\delta o\_{k}}{\delta net\_{k}} = -\frac{\delta E}{\delta o\_{k}} f \rq (net\_k) \; \; \; \; (4a)$$
+
+$$\displaystyle \delta\_j^y = -\frac{\delta E}{\delta net\_{j}} = -\frac{\delta E}{\delta y\_{j}} \frac{\delta y\_{j}}{\delta net\_{j}} = -\frac{\delta E}{\delta y\_{j}} f \rq (net\_j) \; \; \; \; (4a)$$
+
+根据误差定义式 (*)，可得输出层与隐层误差信号的第一项导数：
+
+$$\displaystyle \frac{\delta E}{\delta o\_{k}} = -(d\_k - o\_k) \; \; \; \; (5a)$$
+
+$$\displaystyle \frac{\delta E}{\delta y\_{j}} = -\sum \_{k=1}^l(d\_k - o\_k) f \rq (net\_k) w\_{jk} \; \; \; \; (5b)$$
+
+然后根据 Sigmoid 函数导数，容易求得误差信号的第二项导数，再综合 (4) (5) 式，整理得：
+
+$$\displaystyle \delta\_k^o = (d\_k - o\_k) o\_k (1-o\_k) \; \; \; \; (6a)$$
+
+$$\displaystyle \delta\_j^y = \left ( \sum\_{k=1}^l \delta\_k^o w\_{jk} \right ) y\_j (1-y\_j) \; \; \; \; (6b)$$
+
+至此，两个误差信号的推导已经完成，然后将式 (6) 代回到式 (3)，就可以得到三层感知器的 BP 算法权值调整计算公式：
+
+```katex
+\begin{cases}
+\Delta w_{jk} = \eta \delta_k^o y_j = \eta (d_k - o_k) o_k (1-o_k) y_j & (7a) \\ 
+\Delta v_{ij} = \eta \delta_j^y x_i = \eta \left ( \sum_{k=1}^l \delta_k^o w_{jk} \right ) y_j (1-y_j)x_i & (7b)
+\end{cases}
+```
+
+权值调整公式可以写成向量形式：
+
+```katex
+\begin{cases}
+\Delta W = \eta (\delta^o Y^T)^T & (8a) \\ 
+\Delta V = \eta (\delta^y X^T)^T & (8b)
+\end{cases}
+```
+
+可以看出，各层权值调整公式形式上都是一样的，均由学习率$$\eta$$，误差信号$$\delta$$和输入信号$$Y$$（或$$X$$）3 个因素决定。
+
+对于**一般的多层感知器**，设一共有$$H$$个隐层，节点数分别记为$$m\_1, m\_2, \cdots, m\_h$$，各隐层输出分别记为$$y^1, y^2, \cdots, y^h$$，各权值矩阵分别记为$$W^1, W^2, \cdots, W^h, \cdots, W^{H+1}$$，则各层权值调整计算公式如下。
+
+对输出层：
+
+$$\Delta w\_{jk}^{H+1} = \eta \delta \_k^{H+1}y\_j^h = \eta (d\_k-o\_k)o\_k(1-o\_k)y\_j^h$$
+
+$$j=0, 1, 2, \cdots, m\_h \; \; , k=1, 2, \cdots, l$$
+
+对第$$h$$隐层：
+
+$$\displaystyle \Delta w\_{ij}^h = \eta \delta \_j^h y\_i^{h-1} = \eta \left ( \sum \_{k=1}^l \delta \_k^o w\_{jk}^{h+1} \right ) y\_j^h (1-y\_j^h)y\_i^{h-1}$$
+
+$$i=0, 1, 2, \cdots, m\_{h-1} \; \; j=1, 2, \cdots, m\_h$$
+
+如果是第一隐层，则上面公式的下标$$i$$变为$$p$$，$$m\_{h-1}$$变为$$n$$即可。
+
+按照国际惯例，我们来写成矩阵形式，设$$Y^h = (y\_0, y\_1, y\_2, \cdots, y\_j, \cdots, y\_m)^T$$，$$\delta ^h = (\delta \_1^h, \delta \_2^h, \cdots, \delta \_k^h, \cdots, \delta \_{m\_h}^h)^T$$，则
+
+$$\Delta W^h = \eta (\delta ^h (Y^h)^T)^T$$
+
+**(2) 算法流程**
+
+理论基础已经搭建完毕，下面就可以安心设计算法了。
+
+> (1) 数据初始化
+> &nbsp; &nbsp; &nbsp; &nbsp; 设定好阈值$$T^h=(t\_0^h,t\_1^h,\cdots,t\_{m\_h}^h)$$（$$m\_h$$为计算层的节点数）、学习率$$\eta \in (0,1)$$。
+> &nbsp; &nbsp; &nbsp; &nbsp; 对各个权值 $$w\_{ij}^h, w\_{ij}^h, \cdots, w\_{m\_{h-1}m\_{h}}^h$$赋予较小的非零随机数。得到
+```katex
+W^h = \begin{bmatrix}
+t_{0}^h & t_{1}^h & \cdots & t_{m_h}^h \\ 
+w_{00}^h & w_{01}^h & \cdots & w_{0m_h}^h \\ 
+w_{10}^h & w_{11}^h & \cdots & w_{1m_h}^h \\ 
+\vdots & \vdots & \ddots & \vdots \\ 
+w_{n0}^h & w_{n0}^h & \cdots & w_{nm_h}^h
+\end{bmatrix}, \; \; h = 1, 2, \cdots, H+1
+```
+
+> (2) 输入样本
+> &nbsp; &nbsp; &nbsp; &nbsp; 输入样本对$$\\{ X^p,d^p \\}$$，其中$$X^p=(-1, x\_1^p, x\_2^p, \cdots, x\_{m\_0}^p )$$，$$d^p=(-1, d\_1^p, d\_2^p, \cdots, d\_{m\_{H+1}}^p )$$，上标$$p$$为样本对序号，设样本总数为$$P$$。
+>注：$$y^{H+1}$$即输出向量$$o^{H+1}$$.
+
+> (3) 前向传播
+> &nbsp; &nbsp; &nbsp; &nbsp; 根据转移函数计算实际输出
+```katex
+Y^h = f((W^h)^T Y^{h-1}) , \;\; h=1,2, \cdots, H+1 \\
+```
+> (4) 计算输出误差
+```katex
+\displaystyle 
+E^p = \frac{1}{2}(d^p-O^p)^2 = \frac{1}{2}\sum_{k=1}^{m_{H+1}}(d_{k}^{p}-o_{k}^{p})^{2}
+```
+
+> (5) 反向传播
+
+>  &nbsp; &nbsp; &nbsp; &nbsp; (i) 计算各层误差信号
+>  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 对输出层：$$\delta \_k^{H+1} = (d\_k-o\_k)o\_k(1-o\_k)$$
+>  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 对隐藏层：$$\delta \_j^h = \left ( \sum \_{k=1}^l \delta \_k^o w\_{jk}^{h+1} \right ) y\_j^h (1-y\_j^h), \; \; h = 1, 2, \cdots, H$$
+
+>  &nbsp; &nbsp; &nbsp; &nbsp; (ii) 调整各层权值
+```katex
+\Delta W^h = \eta (\delta ^h (Y^h)^T)^T, \; \; h = 1, 2, \cdots, H+1
+```
+
+> (6) 重复步骤(2)至(5)，直到输入完所有数据，若满足下式条件，则训练结束。
+```katex
+\displaystyle 
+E_{RME} = \sqrt{\frac{1}{P}\sum_{P}^{p=1}(E^{p})^{2}} < E_{min}
+```
+
+**(3) 算法实现**
+
+下面进行一个简单的四分类问题。训练集为
+
+第一类：
+```katex
+\left (
+X^1=\begin{bmatrix}
+1\\ 
+1
+\end{bmatrix},
+d^1=\begin{bmatrix}
+0\\ 
+0
+\end{bmatrix}
+\right ), \; \;
+
+\left (
+X^2=\begin{bmatrix}
+1\\ 
+2
+\end{bmatrix},
+d^1=\begin{bmatrix}
+0\\ 
+0
+\end{bmatrix}
+\right )
+```
+
+第二类：
+```katex
+\left (
+X^3=\begin{bmatrix}
+2\\ 
+-1
+\end{bmatrix},
+d^3=\begin{bmatrix}
+0\\ 
+1
+\end{bmatrix}
+\right ), \; \;
+
+\left (
+X^4=\begin{bmatrix}
+2\\ 
+2
+\end{bmatrix},
+d^4=\begin{bmatrix}
+0\\ 
+1
+\end{bmatrix}
+\right )
+```
+
+第三类：
+```katex
+\left (
+X^5=\begin{bmatrix}
+-1\\ 
+2
+\end{bmatrix},
+d^5=\begin{bmatrix}
+1\\ 
+0
+\end{bmatrix}
+\right ), \; \;
+
+\left (
+X^6=\begin{bmatrix}
+-2\\ 
+1
+\end{bmatrix},
+d^6=\begin{bmatrix}
+1\\ 
+0
+\end{bmatrix}
+\right )
+```
+
+第四类：
+```katex
+\left (
+X^7=\begin{bmatrix}
+-1\\ 
+-1
+\end{bmatrix},
+d^7=\begin{bmatrix}
+1\\ 
+1
+\end{bmatrix}
+\right ), \; \;
+
+\left (
+X^8=\begin{bmatrix}
+-2\\ 
+-2
+\end{bmatrix},
+d^8=\begin{bmatrix}
+1\\ 
+1
+\end{bmatrix}
+\right )
+```
+
+由于数据是二维的，我们可以绘制数据分布图，直观地确定神经网络的拓补结构。关于神经网络建立的详细内容在下一节会说到。
+
+通过调用 Python 的 matplotlib.pyplot 包，绘制图 3.2 所示的图像。代码如下：
+
+<div align="center" style="background-color: #999;width: max-content;margin: auto;margin-bottom: 1rem;">![](/static/images/img_art/001552550995304548c72a5f36d4b3285f4271915c69981000.png)
+图3.2 数据分布图
+
+</div>
+
+```python
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+'''data'''
+# threshold
+T = np.array([[1,1],[1,1]])
+# weight
+V = np.vstack( (T[:,0], np.array([
+    [1,0],
+    [0,1]
+])) )
+W = np.vstack( (T[:,1], np.array([
+    [1,0],
+    [0,1]
+])) )
+# input
+X = np.array([
+    [1,1],
+    [1,2],
+    [2,-1],
+    [2,2],
+    [-1,2],
+    [-2,1],
+    [-1,-1],
+    [-2,-2],
+])
+# expect output
+D = np.array([
+    [0,0],
+    [0,0],
+    [0,1],
+    [0,1],
+    [1,0],
+    [1,0],
+    [1,1],
+    [1,1],
+])
+# learning rate
+eta = 0.5
+# transition function
+def f(x):
+    return 1.0 / (1.0 + np.exp(-x))
+
+# 3 layers network
+t = X.shape[0] # input data number
+n = X.shape[1] # dimension of input
+m = V.shape[1]+1 # number of cells in hidden layer
+l = W.shape[1] # number of cells in output layer
+
+'''plot'''
+# data figure
+plt.figure(1)
+plt.plot(X[0:2,0],X[0:2,1],'o')
+plt.plot(X[2:4,0],X[2:4,1],'o')
+plt.plot(X[4:6,0],X[4:6,1],'o')
+plt.plot(X[6:8,0],X[6:8,1],'o')
+plt.show()
+```
+
+可以看到，该四种类型并不是严格线性可分的，故应该建立只少含有一个隐层的感知器神经网络，考虑到该分类问题比较简单，故可以设置一个隐层，隐层节点数 2 个就足够了，因为可以很直观的看出一条折线和一条直线就能够分出四类（为什么能够产生折现？回顾上一节的感知器神经网络）。由于输出有四类，所以输出层需要有 2 个节点。最终确立了一个 3x3x2 的感知器神经网络（输入层x隐层x输出层）
+
+由于传统的感知器学习规则没办法修改隐层节点的权值，故本节所述的 BP 算法就派上了大用场。
+
+下面使用 BP 算法进行训练：
+
+```python
+'''train'''
+# result of hidder layer
+y = np.zeros((m,1))
+# result of output layer
+o = np.zeros((l,1))
+# cost
+E = np.zeros((t,1))
+ERME = 1
+# accuracy
+epsilon = 1e-2
+# max steps
+MAX = 20000
+# training pointer
+q = 0
+while(ERME > epsilon and q < MAX):
+    # sample pointer
+    p = 0
+    for x in X:
+        x = X[p].reshape(2,1)
+        d = D[p].reshape(2,1)
+        # forward process
+        y = f(V.T.dot( np.vstack((-1,x)) ))
+        o = f(W.T.dot( np.vstack((-1,y)) ))
+        # deviation
+        E[p] = 0.5*np.sum((d-o)**2)
+        # backward process
+        dto = (d-o)*o*(1-o)
+        dty = (W[1:,:].dot(dto))*y*(1-y)
+        W = W + eta*(dto.dot(np.vstack((-1,y)).T)).T
+        V = V + eta*(dty.dot(np.vstack((-1,x)).T)).T
+
+        #print(W)
+        p += 1
+        #print(' x = ', x.reshape((1,2)), ' y = ', y.reshape((1,2)), '\nd = ', d.reshape((1,2)), ' o = ', o.reshape((1,2)))
+    ERME = np.sqrt((E.T.dot(E)/t)[0,0])
+    q += 1
+print('>> step: ', q, ' error: ', ERME)
+```
+
+训练情况如下，这次运气比较好，训练了五千多次，达到了预先设置的 `1%` 精度。不过感觉效率还是低了，后面再探讨改进方法。
+
+	>> step:  5286  error:  0.00999988064655296
+
+然后用原始数据测试一下：
+
+```python
+'''test'''
+k=0
+for x in X:
+    o = f( W.T.dot(np.vstack((-1,f(V.T.dot(np.vstack((-1,x.reshape(2,1)))))))) )
+    print('input : ', D[k].reshape(1,2), ', output', ': [', o[0,0], ',', o[1,0], ']')
+    k += 1
+```
+
+输出情况为：
+
+	expect :  [[0 0]] , output : [ 0.012977797393761117 , 0.015513424790567101 ]
+	expect :  [[0 0]] , output : [ 0.01293502641867862 , 0.01532426818070405 ]
+	expect :  [[0 1]] , output : [ 5.754439516221227e-07 , 0.9999033271073705 ]
+	expect :  [[0 1]] , output : [ 1.702131271055002e-07 , 0.9825016701572952 ]
+	expect :  [[1 0]] , output : [ 0.98198184244538 , 3.657827390644882e-05 ]
+	expect :  [[1 0]] , output : [ 0.9935770900037777 , 0.003171501416567603 ]
+	expect :  [[1 1]] , output : [ 0.9994610497150428 , 0.9925224775922776 ]
+	expect :  [[1 1]] , output : [ 0.9994685717148718 , 0.9929433748779519 ]
+
+非常接近于期望输出了，可见效果还不错！
+
+##3 BP 算法功能分析与改进
+**(1) 功能分析**
+
+BP 网络是具有调整隐层权值能力的多层感知器，故其兼具有感知器的能力，同时其作为神经网络的重要成员，也是因为其其他特点，总结如下：
+
+1. 非线性映射能力
+	* 能够进行高度非线性样本的分类
+	* 解决难以得到解析解的问题
+	* 解决缺乏专家经验的有关问题
+2. 泛化能力
+	* 能够对非样本数据进行正确的映射
+3. 容错能力
+	* 允许输入样本中带有较大的误差甚至个别错误，而提取其中的统计规律
+	
+同时，还应该注意到 BP 算法的一些局限性。
+
+1. 存在平坦区域
+	* 从输出层误差信号定义式(6a)可以看出，当实际输出接近期望输出/实际输出接近 0 或 1时，会造成误差信号接近零，后者或造成误差 E 为任意值，但梯度很小，如果将误差曲面不做连绵起伏的山脉，如图 3.3(a) 所示，则此情况类似于图中一片倾斜而又平坦的山坡。
+	* 其原因在于 Sigmoid 转移函数具有饱和特性，净输入绝对值大于 3 时接近饱和，对权值变化不太敏感。
+2. 存在多个极小点
+	* 将误差曲面比作连绵起伏的山脉，那么其中的极小点就相当于哪些凹下去的小坑，如图 3.3(b) 所示，误差比周围小，但可能不是最小的，一旦陷进去就难以自拔。
+	* BP 算法无法辨别极小点的性质，其根源在于基于误差梯度下降的权值调整原则每一步求解都取局部最优 [该调整原则即所谓贪心（greedy）算法的原则] 。
+	
+<div style="max-width:60%;margin:auto;text-align:center;">![](/static/images/img_art/001553323882732b091137d87e84e75a8974d53ee5058fb000.png)
+图3.3 两个局限性示意图
+
+</div>
+	
+这些局限性导致 BP 算法有以下缺陷：
+
+* 训练次数多，使得学习效率越低，收敛速度慢；
+* 易形成局部极小而得不到全局最优；
+
+同时，还有关于神经网络的一些问题：
+
+* 隐节点的选取缺乏理论指导；
+* 训练是学习新样本有遗忘旧样本的趋势；
+	
+**(2) 算法改进**
+
+将 BP 算法用于多层感知器，可以解决高度非线性函数的任意精度逼近问题。但从上面的分析中也可以得知，标准的 BP 算法还存在着不少的缺陷。下面探讨一些解决技术。
+
+技术一：总误差调整
+
+从上述标准 BP 算法中可以看出一个问题，即每输入一个样本，都要回传误差并调整权值，这种**单样本训练**方法难免顾此失彼，导致训练次数增加。反之，如果我们着眼于所用样本的总误差进行权值调整，就可以避免这个问题，计算网络的总误差：
+
+```katex
+\displaystyle
+E_{total} = \sqrt{ \frac{1}{2} \sum_{p=1}^{P} \sum_{k=1}^{l} \left ( d_k^p - o_k^p \right ) ^2 }
+```
+
+然后根据总误差计算各层的误差信号并调整权值。这种方式也称为批（batch）训练或周期（epoch）训练。
+
+具体的权值调整公式就不列出了，推导思路跟上面的一样。
+
+技术二：增加动量项
+
+标准 BP 算法在权值调整过程中，只用到了当前样本的信息，而没有综合考虑之前样本数据，从而使训练过程发送反复振荡，收敛缓慢。为此，我们可以在权值调整公式中加入先前调整权值矩阵，称为动量项：
+
+```katex
+\Delta W(t) = \eta \delta X + \alpha \Delta W(t-1)
+```
+
+其中$$\alpha \in (0,1)$$称为动量系数。
+
+技术三：自适应调节学习率
+
+根据之前的“误差曲面”的概念，我们可以给出一个很自然的想法，就是在误差曲面平缓（误差变化很小）的区域内，应当使用大点的学习率$$\eta$$，迈大步跨过这片区域；而在陡峭（误差变化剧烈）的区域，应当使用小点的学习率，避免步子太大“跨过凹坑”。
+
+一种方法是监控总误差$$E\_{total}$$，若经过一批次权值调整后使总误差$$E\_{total} \uparrow$$，则本次调整无效，且$$\eta (t+1) = \beta \eta (t) \; (\beta < 1)$$；若经过一批次权值调整后使总误差$$E\_{total} \downarrow$$，则本次调整有效，且$$\eta (t+1) = \theta \eta (t) \; (\theta > 1)$$
+
+技术四：引入陡度因子
+
+另一种克服误差曲面平坦区域的方法是从其根源入手—— Sigmoid 转移函数的饱和特性。如果取值调整进入平坦区域，则设法压缩神经元的净输入，是其输出退出转移函数的饱和区，就可以改变误差函数的形状，从而使调整脱离平坦区。
+
+具体做法是，在原转移函数中引入一个陡度因子$$\lambda$$：
+
+```katex
+\displaystyle
+o_k = \frac{1}{ 1 + e^{-net_k / \lambda} }
+```
+
+下面是压缩后函数的直观表达。
+
+<div style="max-width:30%;margin:auto;text-align:center;">![](/static/images/img_art/001553324217511dac379fa1be34b7dad8c5c5c8d3a5344000.png)
+图3.4 net 压缩前后的转移函数曲线
+
+</div>
+
+显然，经过陡度因子压缩后，Sigmoid 转移函数的敏感区段变长，从而可是绝对值较大的 $$net\_k$$ 退出饱和值。
